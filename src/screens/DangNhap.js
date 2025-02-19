@@ -14,7 +14,7 @@ import { useNavigation } from "@react-navigation/native";
 const DangNhap = () => {
   const navigation = useNavigation();
   const handleHome = () => {
-    navigation.navigate("Home");
+    navigation.navigate("MainTabs");
   };
   const [selectedRole, setSelectedRole] = useState("Giảng viên"); // Mặc định chọn Giảng viên
   const [isPasswordVisible, setPasswordVisible] = useState(false); // Trạng thái ẩn/hiện mật khẩu

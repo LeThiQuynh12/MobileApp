@@ -1,5 +1,6 @@
 const color = {
   darkgray: "#8f8f8f",
+  separate: "#DFD0D0",
   background: "white",
   mainColor: "#64B5F6",
   gray: "#D6D6D6",
