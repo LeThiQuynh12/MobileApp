@@ -7,6 +7,7 @@ const color = {
   red: "#eb343d",
   white: "#ffffff",
   darkBlue: "#008DFE",
+  lightRed: "ffebe8"
 };
 
 export default color;

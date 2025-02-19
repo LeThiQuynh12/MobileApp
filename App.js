@@ -15,6 +15,7 @@ import XemTienDo from "./src/screens/XemTienDo";
 import DuyetDeTai from "./src/screens/DuyetDeTai";
 import ThongTinCaNhan from "./src/screens/ThongTinCaNhan";
 import DangNhap from "./src/screens/DangNhap";
+import ThongBao from "./src/screens/ThongBao";
 
 const Drawer = createDrawerNavigator();
 
@@ -82,6 +83,7 @@ export default function App() {
           <Drawer.Navigator
             drawerContent={(props) => <CustomDrawerContent {...props} />}
           >
+            <Drawer.Screen name="ThongBao" component={ThongBao} />
             <Drawer.Screen name="Home" component={HomeScreen} />
             <Drawer.Screen name="XemTienDo" component={XemTienDo} />
             <Drawer.Screen name="DuyetDeTai" component={DuyetDeTai} />
