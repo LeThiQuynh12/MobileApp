@@ -15,6 +15,8 @@ import DuyetDeTai from "./src/screens/DuyetDeTai";
 import ThongTinCaNhan from "./src/screens/ThongTinCaNhan";
 import DangNhap from "./src/screens/DangNhap";
 import TopicDetail from "./src/screens/topic/TopicDetail";
+import TrangChuGV from "./src/screens/(GV)/TrangChu";
+import ThongBao from "./src/screens/ThongBao";
 import color from "./src/utils/color";
 import { AntDesign, Fontisto } from "@expo/vector-icons";
 
@@ -62,14 +64,15 @@ function HomeStack() {
           <HeaderLeft title="Trang chủ" navigation={navigation}></HeaderLeft>
         ),
         headerRight: () => (
-          <TouchableOpacity onPress={() => alert("Nhấn vào icon!")}>
+          <TouchableOpacity onPress={() => navigation.navigate("ThongBao")}>
             <Fontisto name="bell" size={23} color={color.darkBlue} style={{ marginRight: 25 }} />
             {/* <Icon name="bell-o" size={22} color="black" style={{ marginRight: 25 }} /> */}
           </TouchableOpacity>
         ),
       })}
     >
-      <Stack.Screen name="HomeScreen" component={HomeScreen} options={{ title: "Trang chủ" }} />
+      <Stack.Screen name="TrangChuGV" component={TrangChuGV} options={{ title: "Trang chủ" }} />
+      <Stack.Screen name="ThongBao" component={ThongBao} />
     </Stack.Navigator>
   );
 }
@@ -106,7 +109,7 @@ function DuyetDeTaiStack() {
       ),
     })}>
       <Stack.Screen
-        name="DuyetMain"
+        name=" "
         component={DuyetDeTai}
 
       />
@@ -122,7 +125,6 @@ function DuyetDeTaiStack() {
           headerLeft: () => <BackButton />, // Thay menu bằng nút quay lại
         }}
       />
-
     </Stack.Navigator>
   );
 }
