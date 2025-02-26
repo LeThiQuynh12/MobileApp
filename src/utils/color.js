@@ -9,7 +9,8 @@ const color = {
   white: "#ffffff",
   darkBlue: "#008DFE",
   lightRed: "ffebe8",
-  lightGray: "#F5F5F5"
+  lightGray: "#F5F5F5",
+  bgPlus: "#edf3f7",
 };
 
 export default color;

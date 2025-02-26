@@ -5,20 +5,54 @@ import {
   View,
   Image,
   TextInput,
+  Button,
 } from "react-native";
 import React, { useState } from "react";
 import Icon from "react-native-vector-icons/FontAwesome";
 import color from "../utils/color";
 import { useNavigation } from "@react-navigation/native";
 
-const DangNhap = () => {
+const DangNhap = ({ setUserRole = null }) => {
+  // const navigation = useNavigation();
+  // setUserRole(null);
+  if (!setUserRole) {
+    console.error("LỖI: setUserRole không được truyền vào DangNhap!");
+  }
+
   const navigation = useNavigation();
   const handleHome = () => {
-    navigation.navigate("MainTabs");
+    // alert("login...");
+    if (selectedRole == "Giảng viên") {
+      // navigation.navigate("MainTabsGV");
+      setUserRole("giangvien");
+    } else if (selectedRole == "Sinh viên") {
+      // navigation.navigate("MainTabsSV");
+      setUserRole("sinhvien");
+    } else {
+      setUserRole("admin");
+    }
   };
+  const handleForgetPassword = () => {
+    navigation.navigate("QuenMatKhau");
+  };
+
   const [selectedRole, setSelectedRole] = useState("Giảng viên"); // Mặc định chọn Giảng viên
   const [isPasswordVisible, setPasswordVisible] = useState(false); // Trạng thái ẩn/hiện mật khẩu
   const [isChecked, setIsChecked] = useState(false);
+  // const [selectedRole, setSelectedRole] = useState("Giảng viên"); // Mặc định chọn Giảng viên
+  // const [isPasswordVisible, setPasswordVisible] = useState(false); // Ẩn/hiện mật khẩu
+  // const [isChecked, setIsChecked] = useState(false); // Trạng thái checkbox "Nhớ mật khẩu"
+
+  // const handleHome = () => {
+  //   if (selectedRole === "Giảng viên") {
+  //     navigation.replace("GiangVien"); // Chuyển đến giao diện giảng viên
+  //   } else if (selectedRole === "Sinh viên") {
+  //     navigation.replace("SinhVien"); // Chuyển đến giao diện sinh viên
+  //   } else {
+  //     navigation.replace("Admin"); // Chuyển đến giao diện admin
+  //   }
+  // };
+
   return (
     <View style={styles.container}>
       <View style={styles.headertitle}>
@@ -26,6 +60,23 @@ const DangNhap = () => {
           style={styles.imgLogin}
           source={require("../data/imgs/DangNhapbg.png")}
         />
+        {/* <Button
+          title="Admin"
+          onPress={() => {
+            setSelectedRole("admin");
+            handleHome();
+          }}
+        /> */}
+        {/* Nút admin */}
+        <TouchableOpacity
+          style={styles.buttonLogin}
+          onPress={() => {
+            // setSelectedRole("admin");
+            setUserRole("admin");
+          }}
+        >
+          <Text style={styles.buttonLoginText}>Admin</Text>
+        </TouchableOpacity>
         <Text style={styles.title}>EPU NCKH</Text>
         <Text style={styles.subtitle}>Vui lòng đăng nhập tài khoản</Text>
 
@@ -118,7 +169,9 @@ const DangNhap = () => {
             <Text style={styles.rememberPWText}>Nhớ mật khẩu</Text>
           </View>
 
-          <Text style={styles.forgotPw}>Quên mật khẩu</Text>
+          <TouchableOpacity onPress={handleForgetPassword}>
+            <Text style={styles.forgotPw}>Quên mật khẩu</Text>
+          </TouchableOpacity>
         </View>
         {/* Nút đăng nhập */}
         <TouchableOpacity style={styles.buttonLogin} onPress={handleHome}>
