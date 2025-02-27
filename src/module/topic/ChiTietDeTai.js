@@ -8,8 +8,7 @@ import {
   View,
 } from "react-native";
 import color from "../../utils/color";
-import { useNavigation } from "@react-navigation/native";
-
+import { useNavigation, useRoute } from "@react-navigation/native";
 const data = {
   topicName:
     "NGHIÊN CỨU CÁC VẤN ĐỀ BẢO MẬT VÀ THỬ NGHIỆM CÁC TÍNH NĂNG BẢO MẬT KHI PHÁT TRIỂN MOBILE APP DỰA TRÊN NỀN TẢNG NATIVE REACT VÀ KOTLIN.",
@@ -21,24 +20,95 @@ const data = {
   field: "Phát triển Mobile App",
   member: 5,
 };
-const tasks = [
+
+const tasksct = [
   {
-    id: 1,
-    name: "Nhiệm vụ 1",
+    title: "Nhiệm vụ 1",
+    summary: "Xây dựng giao diện quản lý sinh viên",
+    description:
+      "Thiết kế màn hình đăng nhập, chi tiết đề tài, danh sách đề tài",
+    startDay: "20-12-2025",
+    endDay: "20-12-2025",
+    members: [
+      {
+        img: require("../../../src/data/imgs/Quynh.png"),
+        name: "Quỳnh",
+      },
+      { img: require("../../../src/data/imgs/Trien.png"), name: "Triển" },
+    ],
+    status: "To do",
   },
   {
-    id: 2,
-    name: "Nhiệm vụ 2",
+    title: "Nhiệm vụ 2",
+    summary: "Xây dựng giao diện quản lý sinh viên",
+    description:
+      "Thiết kế màn hình đăng nhập, chi tiết đề tài, danh sách đề tài",
+    startDay: "20-12-2025",
+    endDay: "20-12-2025",
+    members: [
+      { img: require("../../../src/data/imgs/Viet.png"), name: "Việt" },
+      { img: require("../../../src/data/imgs/Trien.png"), name: "Triển" },
+    ],
+    status: "In progress",
   },
   {
-    id: 3,
-    name: "Nhiệm vụ 3",
+    title: "Nhiệm vụ 3",
+    summary: "Xây dựng giao diện quản lý giảng viên",
+    description:
+      "Thiết kế màn hình đăng nhập, trang chủ, thông tin cá nhân, chi tiết đề tài, danh sách đề tài",
+    startDay: "20-12-2025",
+    endDay: "20-12-2025",
+    members: [
+      { img: require("../../../src/data/imgs/Quynh.png"), name: "Quỳnh" },
+      { img: require("../../../src/data/imgs/Viet.png"), name: "Việt" },
+    ],
+    status: "To do",
   },
   {
-    id: 4,
-    name: "Nhiệm vụ 4",
+    title: "Nhiệm vụ 3",
+    summary: "Xây dựng giao diện quản lý giảng viên",
+    description:
+      "Thiết kế màn hình đăng nhập, trang chủ, thông tin cá nhân, chi tiết đề tài, danh sách đề tài",
+    startDay: "20-12-2025",
+    endDay: "20-12-2025",
+    members: [
+      { img: require("../../../src/data/imgs/Quynh.png"), name: "Quỳnh" },
+      { img: require("../../../src/data/imgs/Viet.png"), name: "Việt" },
+    ],
+    status: "To do",
+  },
+  {
+    title: "Nhiệm vụ 3",
+    summary: "Xây dựng giao diện quản lý giảng viên",
+    description:
+      "Thiết kế màn hình đăng nhập, trang chủ, thông tin cá nhân, chi tiết đề tài, danh sách đề tài",
+    startDay: "20-12-2025",
+    endDay: "20-12-2025",
+    members: [
+      { img: require("../../../src/data/imgs/Quynh.png"), name: "Quỳnh" },
+      { img: require("../../../src/data/imgs/Viet.png"), name: "Việt" },
+    ],
+    status: "Done",
   },
 ];
+// const tasks = [
+//   {
+//     id: 1,
+//     name: "Nhiệm vụ 1",
+//   },
+//   {
+//     id: 2,
+//     name: "Nhiệm vụ 2",
+//   },
+//   {
+//     id: 3,
+//     name: "Nhiệm vụ 3",
+//   },
+//   {
+//     id: 4,
+//     name: "Nhiệm vụ 4",
+//   },
+// ];
 
 const mockTask = {
   title: "Thiết kế UI",
@@ -52,12 +122,13 @@ const mockTask = {
 const ChiTietDeTai = () => {
   const navigation = useNavigation();
   // <Button title="Quay lại" onPress={() => navigation.goBack()} />
-  const handleShowTaskDetail = (id) => {
-    navigation.navigate("ChiTietNhiemVu", { tasks: mockTask });
-  };
   const handleShowAllTask = () => {
-    navigation.navigate("DanhSachNhiemVu");
+    navigation.navigate("DanhSachNhiemVu", { tasksct });
   };
+  const getTaskCountByStatus = (status) => {
+    return tasksct.filter((task) => task.status === status).length;
+  };
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.topicName}>{data.topicName}</Text>
@@ -121,49 +192,71 @@ const ChiTietDeTai = () => {
               backgroundColor: color.mainColor,
               paddingHorizontal: 12,
               borderRadius: 100,
+              overflow: "hidden",
               marginRight: 10,
               height: 27,
               justifyContent: "center",
             }}
           >
-            <Text style={{ color: "#fff" }}>Xem tất cả</Text>
+            <Text style={{ color: color.white }}>Xem tất cả</Text>
           </TouchableOpacity>
         </View>
-        {tasks &&
-          tasks.map((task) => (
-            <View style={styles.taskItem} key={task.id}>
-              <Text>{task.name}</Text>
-              <TouchableOpacity
-                onPress={() => handleShowTaskDetail(task.id)}
-                style={{
-                  backgroundColor: color.mainColor,
-                  paddingHorizontal: 12,
-                  paddingVertical: 2,
-                  borderRadius: 100,
-                }}
-              >
-                <Text style={{ color: "#fff" }}>Xem chi tiết</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        {/* <View style={styles.taskItem}>
-                <Text>Nhiệm vụ 1</Text>
-                <TouchableOpacity style={{backgroundColor: color.mainColor, paddingHorizontal: 12, paddingVertical: 2, borderRadius: 100}}>
-                <Text style={{color: "#fff"}}>Xem chi tiết</Text>
-                </TouchableOpacity>
-            </View>
-            <View style={styles.taskItem}>
-                <Text>Nhiệm vụ 2</Text>
-                <TouchableOpacity style={{backgroundColor: color.mainColor, paddingHorizontal: 12, paddingVertical: 2, borderRadius: 100}}>
-                <Text style={{color: "#fff"}}>Xem chi tiết</Text>
-                </TouchableOpacity>
-            </View>
-            <View style={styles.taskItem}>
-                <Text>Nhiệm vụ 3</Text>
-                <TouchableOpacity style={{backgroundColor: color.mainColor, paddingHorizontal: 12, paddingVertical: 2, borderRadius: 100}}>
-                <Text style={{color: "#fff"}}>Xem chi tiết</Text>
-                </TouchableOpacity>
-            </View> */}
+        <View style={styles.taskStatusContainer}>
+          <View
+            style={[
+              styles.statusBox,
+              {
+                backgroundColor: "red",
+
+                width: `${
+                  (getTaskCountByStatus("To do") / tasksct.length) * 100
+                }%`,
+              },
+            ]}
+          />
+          <View
+            style={[
+              styles.statusBox,
+              {
+                backgroundColor: "yellow",
+                width: `${
+                  (getTaskCountByStatus("In progress") / tasksct.length) * 100
+                }%`,
+              },
+            ]}
+          />
+          <View
+            style={[
+              styles.statusBox,
+              {
+                backgroundColor: "green",
+                width: `${
+                  (getTaskCountByStatus("Done") / tasksct.length) * 100
+                }%`,
+              },
+            ]}
+          />
+        </View>
+        <View style={styles.decriptionTask}>
+          <View style={styles.decriptionItem}>
+            <View
+              style={[styles.decriptionColor, { backgroundColor: "red" }]}
+            ></View>
+            <Text style={{}}>To do</Text>
+          </View>
+          <View style={styles.decriptionItem}>
+            <View
+              style={[styles.decriptionColor, { backgroundColor: "yellow" }]}
+            ></View>
+            <Text style={{}}>In progress</Text>
+          </View>
+          <View style={styles.decriptionItem}>
+            <View
+              style={[styles.decriptionColor, { backgroundColor: "green" }]}
+            ></View>
+            <Text style={{}}>Done</Text>
+          </View>
+        </View>
       </View>
       <View style={styles.buttonWrapper}>
         <TouchableOpacity style={styles.buttonContainer}>
@@ -240,6 +333,47 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     flex: 1,
+  },
+  taskStatusContainer: {
+    borderRadius: 10,
+    flexDirection: "row",
+    height: 12,
+    marginRight: 10,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 1, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 2, // Dành cho Android
+  },
+  statusBox: {
+    height: "100%",
+  },
+  decriptionTask: {
+    // height: 20,
+    padding: 20,
+    // backgroundColor: "#ccc",
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  decriptionItem: {
+    flexDirection: "row",
+    width: "45%",
+    marginRight: 8,
+    marginBottom: 8,
+    alignItems: "center",
+  },
+  decriptionColor: {
+    width: 16,
+    height: 16,
+    backgroundColor: "red",
+    marginRight: 4,
+    borderRadius: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.6,
+    shadowRadius: 1.5,
+    elevation: 4, // Dành cho Android
   },
 });
 

@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -5,180 +6,168 @@ import {
   View,
   Image,
   TextInput,
-  Button,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
-import React, { useState } from "react";
 import Icon from "react-native-vector-icons/FontAwesome";
 import color from "../utils/color";
 import { useNavigation } from "@react-navigation/native";
-
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 const DangNhap = ({ setUserRole = null }) => {
-  // const navigation = useNavigation();
-  // setUserRole(null);
-  if (!setUserRole) {
-    console.error("LỖI: setUserRole không được truyền vào DangNhap!");
-  }
-
   const navigation = useNavigation();
+  const [selectedRole, setSelectedRole] = useState("Giảng viên");
+  const [isPasswordVisible, setPasswordVisible] = useState(false);
+  const [isChecked, setIsChecked] = useState(false);
+
+  const [selectedDate, setSelectedDate] = useState("");
+
   const handleHome = () => {
-    // alert("login...");
-    if (selectedRole == "Giảng viên") {
-      // navigation.navigate("MainTabsGV");
+    if (selectedRole === "Giảng viên") {
       setUserRole("giangvien");
-    } else if (selectedRole == "Sinh viên") {
-      // navigation.navigate("MainTabsSV");
+    } else if (selectedRole === "Sinh viên") {
       setUserRole("sinhvien");
     } else {
       setUserRole("admin");
     }
   };
+
   const handleForgetPassword = () => {
     navigation.navigate("QuenMatKhau");
   };
 
-  const [selectedRole, setSelectedRole] = useState("Giảng viên"); // Mặc định chọn Giảng viên
-  const [isPasswordVisible, setPasswordVisible] = useState(false); // Trạng thái ẩn/hiện mật khẩu
-  const [isChecked, setIsChecked] = useState(false);
-  // const [selectedRole, setSelectedRole] = useState("Giảng viên"); // Mặc định chọn Giảng viên
-  // const [isPasswordVisible, setPasswordVisible] = useState(false); // Ẩn/hiện mật khẩu
-  // const [isChecked, setIsChecked] = useState(false); // Trạng thái checkbox "Nhớ mật khẩu"
-
-  // const handleHome = () => {
-  //   if (selectedRole === "Giảng viên") {
-  //     navigation.replace("GiangVien"); // Chuyển đến giao diện giảng viên
-  //   } else if (selectedRole === "Sinh viên") {
-  //     navigation.replace("SinhVien"); // Chuyển đến giao diện sinh viên
-  //   } else {
-  //     navigation.replace("Admin"); // Chuyển đến giao diện admin
-  //   }
-  // };
-
   return (
-    <View style={styles.container}>
-      <View style={styles.headertitle}>
-        <Image
-          style={styles.imgLogin}
-          source={require("../data/imgs/DangNhapbg.png")}
-        />
-        {/* <Button
-          title="Admin"
-          onPress={() => {
-            setSelectedRole("admin");
-            handleHome();
-          }}
-        /> */}
-        {/* Nút admin */}
-        <TouchableOpacity
-          style={styles.buttonLogin}
-          onPress={() => {
-            // setSelectedRole("admin");
-            setUserRole("admin");
-          }}
-        >
-          <Text style={styles.buttonLoginText}>Admin</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>EPU NCKH</Text>
-        <Text style={styles.subtitle}>Vui lòng đăng nhập tài khoản</Text>
-
-        <View style={styles.roleContainer}>
-          {/* Nút Giảng viên */}
-          <TouchableOpacity
-            style={[
-              styles.roleButton,
-              selectedRole === "Giảng viên" && styles.activeButton,
-            ]}
-            onPress={() => setSelectedRole("Giảng viên")}
-          >
-            <Text
-              style={[
-                styles.roleText,
-                selectedRole === "Giảng viên" && styles.activeText,
-              ]}
-            >
-              Giảng viên
-            </Text>
-          </TouchableOpacity>
-
-          {/* Nút Sinh viên */}
-          <TouchableOpacity
-            style={[
-              styles.roleButton,
-              selectedRole === "Sinh viên" && styles.activeButton,
-            ]}
-            onPress={() => setSelectedRole("Sinh viên")}
-          >
-            <Text
-              style={[
-                styles.roleText,
-                selectedRole === "Sinh viên" && styles.activeText,
-              ]}
-            >
-              Sinh viên
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Nhập tài khoản */}
-        <View style={styles.inputContainer}>
-          <Icon
-            style={styles.icon}
-            name="user"
-            size={20}
-            color={color.darkgray}
-          />
-          <TextInput style={styles.input} placeholder="Nhập tài khoản" />
-        </View>
-
-        {/* Nhập mật khẩu */}
-        <View style={styles.inputContainer}>
-          <Icon
-            style={styles.icon}
-            name="lock"
-            size={20}
-            color={color.darkgray}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Nhập mật khẩu"
-            secureTextEntry={!isPasswordVisible} // Ẩn hoặc hiện mật khẩu
-          />
-          <TouchableOpacity
-            onPress={() => setPasswordVisible(!isPasswordVisible)}
-          >
-            <Icon
-              name={isPasswordVisible ? "eye" : "eye-slash"}
-              size={20}
-              color={color.darkgray}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <KeyboardAwareScrollView
+        style={styles.container}
+        extraScrollHeight={-300} // Đẩy màn hình lên khi bàn phím xuất hiện
+        enableOnAndroid={true} // Kích hoạt trên Android
+        keyboardShouldPersistTaps="handled" // Đảm bảo có thể bấm ra ngoài để ẩn bàn phím
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.headertitle}>
+            <Image
+              style={styles.imgLogin}
+              source={require("../data/imgs/DangNhapbg.png")}
             />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.forgotandremember}>
-          <View style={styles.rememberPW}>
-            <TouchableOpacity
-              onPress={() => setIsChecked(!isChecked)}
-              style={[
-                styles.checkbox,
-                { borderColor: isChecked ? color.darkBlue : color.darkBlue }, // Viền màu darkblue
-              ]}
-            >
-              {isChecked && (
-                <Icon name="check" size={16} color={color.darkBlue} /> // Dấu tích màu darkblue
-              )}
+            <Text style={styles.title}>EPU NCKH</Text>
+            <Text style={styles.subtitle}>Vui lòng đăng nhập tài khoản</Text>
+
+            <View style={styles.roleContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.roleButton,
+                  selectedRole === "Giảng viên" && styles.activeButton,
+                ]}
+                onPress={() => setSelectedRole("Giảng viên")}
+              >
+                <Text
+                  style={[
+                    styles.roleText,
+                    selectedRole === "Giảng viên" && styles.activeText,
+                  ]}
+                >
+                  Giảng viên
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.roleButton,
+                  selectedRole === "Sinh viên" && styles.activeButton,
+                ]}
+                onPress={() => setSelectedRole("Sinh viên")}
+              >
+                <Text
+                  style={[
+                    styles.roleText,
+                    selectedRole === "Sinh viên" && styles.activeText,
+                  ]}
+                >
+                  Sinh viên
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.roleButton,
+                  selectedRole === "Admin" && styles.activeButton,
+                ]}
+                onPress={() => setSelectedRole("Admin")}
+              >
+                <Text
+                  style={[
+                    styles.roleText,
+                    selectedRole === "Admin" && styles.activeText,
+                  ]}
+                >
+                  Admin
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Icon
+                style={styles.icon}
+                name="user"
+                size={20}
+                color={color.darkgray}
+              />
+              <TextInput style={styles.input} placeholder="Nhập tài khoản" />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Icon
+                style={styles.icon}
+                name="lock"
+                size={20}
+                color={color.darkgray}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Nhập mật khẩu"
+                secureTextEntry={!isPasswordVisible}
+              />
+              <TouchableOpacity
+                onPress={() => setPasswordVisible(!isPasswordVisible)}
+              >
+                <Icon
+                  name={isPasswordVisible ? "eye" : "eye-slash"}
+                  size={20}
+                  color={color.darkgray}
+                />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.forgotandremember}>
+              <View style={styles.rememberPW}>
+                <TouchableOpacity
+                  onPress={() => setIsChecked(!isChecked)}
+                  style={[styles.checkbox, { borderColor: color.darkBlue }]}
+                >
+                  {isChecked && (
+                    <Icon name="check" size={16} color={color.darkBlue} />
+                  )}
+                </TouchableOpacity>
+                <Text style={styles.rememberPWText}>Nhớ mật khẩu</Text>
+              </View>
+              <TouchableOpacity onPress={handleForgetPassword}>
+                <Text style={styles.forgotPw}>Quên mật khẩu</Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity style={styles.buttonLogin} onPress={handleHome}>
+              <Text style={styles.buttonLoginText}>Đăng nhập</Text>
             </TouchableOpacity>
-
-            <Text style={styles.rememberPWText}>Nhớ mật khẩu</Text>
           </View>
-
-          <TouchableOpacity onPress={handleForgetPassword}>
-            <Text style={styles.forgotPw}>Quên mật khẩu</Text>
-          </TouchableOpacity>
-        </View>
-        {/* Nút đăng nhập */}
-        <TouchableOpacity style={styles.buttonLogin} onPress={handleHome}>
-          <Text style={styles.buttonLoginText}>Đăng nhập</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAwareScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -251,6 +240,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: color.darkgray,
   },
+
   buttonLogin: {
     backgroundColor: color.mainColor,
     paddingVertical: 12,
@@ -270,7 +260,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     justifyContent: "space-between",
   },
-
   rememberPW: {
     flexDirection: "row",
     justifyContent: "space-between",

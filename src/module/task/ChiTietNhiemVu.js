@@ -1,44 +1,33 @@
 // File ChiTietNhiemVu.js
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  Image,
-  Dimensions,
-} from "react-native";
-import React, {
-  useState,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-} from "react";
+import { StyleSheet, Text, TouchableOpacity, View, Image } from "react-native";
+import React, { useState, useEffect } from "react";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { ScrollView, TextInput } from "react-native-gesture-handler";
 import { useRoute } from "@react-navigation/native";
 import { Calendar } from "react-native-calendars";
-import moment from "moment";
-import Animated, {
-  Extrapolation,
-  interpolate,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from "react-native-reanimated";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import color from "../../utils/color";
+import moment from "moment";
 
-const { height: SCREEN_HEIGHT } = Dimensions.get("window");
-const MAX_TRANSLATE_Y = -SCREEN_HEIGHT + 100;
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  TouchableWithoutFeedback,
+} from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+const ChiTietNhiemVu = ({ route }) => {
+  const { task } = route.params; // Lấy dữ liệu được truyền qua
+  console.log("Route Params:", route.params);
 
-const ChiTietNhiemVu = React.forwardRef((props, ref) => {
-  const [selectedStatus, setSelectedStatus] = useState("In progress");
+  const [selectedStatus, setSelectedStatus] = useState(
+    task?.status || "In progress"
+  );
+
   const handleStatusChange = (status) => {
     setSelectedStatus(status);
   };
-  const route = useRoute();
-  const task = route.params?.task || props.task; // Lấy task từ route params hoặc props
 
+  console.log(task);
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [description, setDescription] = useState("");
@@ -50,240 +39,214 @@ const ChiTietNhiemVu = React.forwardRef((props, ref) => {
       setSummary(task.summary || "");
       setDescription(task.description || "");
     }
-  }, [task]); // Theo dõi sự thay đổi của task
+  }, [task]);
 
-  console.log({ title, summary, description }); // Kiểm tra giá trị
-  const formatDate = (date) => moment(date).format("DD-MM-YYYY");
+  // Format the date to dd/MM/yyyy
+  const formatDate = (date) => moment(date).format("DD/MM/YYYY");
+
+  const [newComment, setNewComment] = useState(""); // Nhận xét mới
+  const [comments, setComments] = useState([
+    { name: "Trần Trung", text: "Nhiệm vụ chi tiết, hoàn thành đúng thời hạn" },
+    { name: "Hoàng Thị Thảo", text: "Các bạn thực hiện nhiệm vụ tốt, đầy đủ" },
+    { name: "Lê Thị Quỳnh", text: "Khó thế Thảo ơi" },
+  ]);
+  const handleAddComment = () => {
+    if (newComment.trim() === "") return; // Kiểm tra nếu comment rỗng
+    setComments([...comments, { name: "Người dùng", text: newComment }]);
+    setNewComment(""); // Xóa nội dung nhập sau khi gửi
+  };
 
   const [startDay, setStartDay] = useState(task?.startDay || "");
   const [endDay, setEndDay] = useState(task?.endDay || "");
-  const [showStartCal, setShowStartCal] = useState(false);
-  const [showEndCal, setShowEndCal] = useState(false);
-
-  const onClose = () => {
-    scrollTo(0);
-  };
 
   const handleSelectedStartDay = (day) => {
-    setStartDay(formatDate(day.dateString)); // Cập nhật ngày bắt đầu
-    setShowStartCal(false); // Ẩn lịch
+    setStartDay(day.dateString); // Cập nhật ngày bắt đầu
+    setShowStartCal(false); // Đóng lịch sau khi chọn
   };
 
   const handleSelectedEndDay = (day) => {
-    setEndDay(formatDate(day.dateString)); // Cập nhật ngày kết thúc
-    setShowEndCal(false); // Ẩn lịch
+    setEndDay(day.dateString); // Cập nhật ngày kết thúc
+    setShowEndCal(false); // Đóng lịch sau khi chọn
   };
 
-  const translateY = useSharedValue(0);
-  const active = useSharedValue(false);
-
-  const scrollTo = useCallback((destination) => {
-    "worklet";
-    active.value = destination !== 0;
-    translateY.value = withSpring(destination, { damping: 50 });
-  }, []);
-
-  const isActive = useCallback(() => {
-    return active.value;
-  }, []);
-
-  useImperativeHandle(ref, () => ({ scrollTo, isActive }), [
-    scrollTo,
-    isActive,
-  ]);
-
-  const context = useSharedValue({ y: 0 });
-
-  const gesture = Gesture.Pan()
-    .onStart(() => {
-      context.value = { y: translateY.value };
-    })
-    .onUpdate((event) => {
-      translateY.value = event.translationY + context.value.y;
-      translateY.value = Math.max(translateY.value, MAX_TRANSLATE_Y);
-    })
-    .onEnd(() => {
-      if (translateY.value > SCREEN_HEIGHT / 3) {
-        scrollTo(90);
-      } else if (translateY.value < SCREEN_HEIGHT / 3) {
-        scrollTo(MAX_TRANSLATE_Y);
-      }
-    });
-
-  useEffect(() => {
-    scrollTo(SCREEN_HEIGHT / 2); // Hiển thị bottom sheet ở giữa màn hình
-  }, [scrollTo, translateY]);
-
-  const rBottomSheetStyle = useAnimatedStyle(() => {
-    const borderRadius = interpolate(
-      translateY.value,
-      [MAX_TRANSLATE_Y + 50, MAX_TRANSLATE_Y],
-      [25, 5],
-      Extrapolation.CLAMP
-    );
-    return {
-      borderRadius,
-      transform: [{ translateY: translateY.value }],
-    };
-  });
+  const [showStartCal, setShowStartCal] = useState(false);
+  const [showEndCal, setShowEndCal] = useState(false);
 
   return (
-    <GestureDetector gesture={gesture}>
-      <Animated.View style={[styles.bottomSheetContainer, rBottomSheetStyle]}>
-        <View style={styles.container}>
-          <View style={styles.containerDetailTask}>
-            <View style={styles.taskHeader}>
-              <TouchableOpacity
-                style={styles.textTaskHeaderctn}
-                onPress={onClose}
-              >
-                <Text style={styles.textHeaderDetail}>Đóng</Text>
-              </TouchableOpacity>
-              <Text style={styles.textHeaderTaskDetail}>Nhiệm vụ chi tiết</Text>
-              <TouchableOpacity style={styles.textTaskHeaderctn}>
-                <Text style={styles.textHeaderDetail}>Lưu</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.task}>
-              <View style={styles.taskContainer}>
-                <TextInput
-                  style={styles.textTaskName}
-                  value={task?.title}
-                  onChangeText={(text) => setTitle(text)} // Cập nhật state khi nhập
-                ></TextInput>
-                <TextInput
-                  value={summary} // Dùng state thay vì task?.summary
-                  style={styles.textTaskSummary}
-                  onChangeText={(text) => setSummary(text)}
-                />
-                <ScrollView style={styles.contentTaskContainer}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <KeyboardAwareScrollView
+        style={styles.container}
+        extraScrollHeight={-100} // Đẩy màn hình lên khi bàn phím xuất hiện
+        enableOnAndroid={true} // Kích hoạt trên Android
+        keyboardShouldPersistTaps="handled" // Đảm bảo có thể bấm ra ngoài để ẩn bàn phím
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View>
+            <View style={styles.containerDetailTask}>
+              <View style={styles.task}>
+                <View style={styles.taskContainer}>
                   <TextInput
-                    value={description} // Dùng state thay vì task?.description
-                    onChangeText={(text) => setDescription(text)}
-                    multiline={true}
-                    numberOfLines={4}
-                    style={{ textAlignVertical: "top" }}
+                    style={styles.textTaskName}
+                    value={title} // Dùng state thay vì task?.title
+                    onChangeText={(text) => setTitle(text)}
                   />
-                </ScrollView>
 
-                <View style={styles.date}>
-                  <Text style={{ marginRight: 20 }}>
-                    Ngày bắt đầu: {task?.startDay}
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => setShowStartCal(!showStartCal)}
-                  >
-                    <Icon name="calendar" color={color.black} size={20} />
-                  </TouchableOpacity>
-                  {showStartCal && (
-                    <Calendar onDayPress={handleSelectedStartDay} />
-                  )}
-                </View>
-
-                <View style={styles.date}>
-                  <Text style={{ marginRight: 20 }}>
-                    Ngày đến hạn: {task?.endDay}
-                  </Text>
-                  <TouchableOpacity onPress={() => setShowEndCal(!showEndCal)}>
-                    <Icon name="calendar" color={color.black} size={20} />
-                  </TouchableOpacity>
-                  {showEndCal && <Calendar onDayPress={handleSelectedEndDay} />}
-                </View>
-
-                <Text style={{ marginTop: 10 }}>Người thực hiện</Text>
-                <View style={styles.membersContainer}>
-                  <Image
-                    source={require("../../../src/data/imgs/defaultAvatar.png")} // Đảm bảo đường dẫn chính xác
-                    style={styles.imgMember}
+                  <TextInput
+                    value={summary} // Dùng state thay vì task?.summary
+                    style={styles.textTaskSummary}
+                    onChangeText={(text) => setSummary(text)}
                   />
-                  <TextInput>{task?.members[0]?.name}</TextInput>
-                </View>
-                <View style={styles.membersContainer}>
-                  <Image
-                    source={require("../../../src/data/imgs/defaultAvatar.png")} // Đảm bảo đường dẫn chính xác
-                    style={styles.imgMember}
-                  />
-                  <TextInput>{task?.members[1]?.name}</TextInput>
-                </View>
-                <View style={styles.documents}>
-                  <Text style={{ paddingVertical: 10, marginTop: 10 }}>
-                    Tài liệu
-                  </Text>
-                  <TouchableOpacity style={styles.uploadFile}>
-                    <Text style={{ marginTop: 5 }}>Tải tài liệu</Text>
-                  </TouchableOpacity>
-                </View>
-                <Text style={{ marginTop: 10 }}>Trạng thái</Text>
+                  <ScrollView style={styles.contentTaskContainer}>
+                    <TextInput
+                      value={description} // Dùng state thay vì task?.description
+                      onChangeText={(text) => setDescription(text)}
+                      multiline={true}
+                      numberOfLines={4}
+                      style={{ textAlignVertical: "top" }}
+                    />
+                  </ScrollView>
 
-                {/* Trạng thái nhiệm vụ */}
-                <View style={styles.statusContainer}>
-                  {["To do", "In progress", "Done"].map((status) => (
+                  <View style={styles.date}>
+                    <Text style={{ marginRight: 20 }}>
+                      Ngày bắt đầu: {formatDate(startDay)}{" "}
+                      {/* Format date here */}
+                    </Text>
+
                     <TouchableOpacity
-                      key={status}
-                      style={[
-                        styles.btnStatus,
-                        selectedStatus === status && styles.btnActive,
-                      ]}
-                      onPress={() => handleStatusChange(status)}
+                      onPress={() => setShowStartCal(!showStartCal)}
                     >
-                      <Text
-                        style={{
-                          color:
-                            selectedStatus === status
-                              ? color.white
-                              : color.darkBlue,
-                          fontWeight: "bold",
-                        }}
-                      >
-                        {status}
-                      </Text>
+                      <Icon name="calendar" color={color.black} size={20} />
                     </TouchableOpacity>
+                    {showStartCal && (
+                      <View style={styles.calendarContainer}>
+                        <Calendar
+                          onDayPress={handleSelectedStartDay}
+                          style={styles.calendar}
+                        />
+                      </View>
+                    )}
+                  </View>
+
+                  <View style={styles.date}>
+                    <Text style={{ marginRight: 20 }}>
+                      Ngày đến hạn: {formatDate(endDay)}{" "}
+                      {/* Format date here */}
+                    </Text>
+
+                    <TouchableOpacity
+                      onPress={() => setShowEndCal(!showEndCal)}
+                    >
+                      <Icon name="calendar" color={color.black} size={20} />
+                    </TouchableOpacity>
+                    {showEndCal && (
+                      <View style={styles.calendarContainer}>
+                        <Calendar
+                          onDayPress={handleSelectedEndDay}
+                          style={styles.calendar}
+                        />
+                      </View>
+                    )}
+                  </View>
+
+                  <Text style={{ marginTop: 10 }}>Người thực hiện</Text>
+                  {task?.members?.map((member, index) => (
+                    <View key={index} style={styles.membersContainer}>
+                      <Image source={member.img} style={styles.imgMember} />
+                      <Text>{member.name}</Text>
+                    </View>
                   ))}
+
+                  <View style={styles.documents}>
+                    <Text style={{ paddingVertical: 10, marginTop: 10 }}>
+                      Tài liệu
+                    </Text>
+                    <TouchableOpacity style={styles.uploadFile}>
+                      <Text style={{ marginTop: 5 }}>Tải tài liệu</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={{ marginTop: 10 }}>Trạng thái</Text>
+
+                  {/* Trạng thái nhiệm vụ */}
+                  <View style={styles.statusContainer}>
+                    {["To do", "In progress", "Done"].map((status) => (
+                      <TouchableOpacity
+                        key={status}
+                        style={[
+                          styles.btnStatus,
+                          selectedStatus === status && styles.btnActive,
+                        ]}
+                        onPress={() => handleStatusChange(status)}
+                      >
+                        <Text
+                          style={{
+                            color:
+                              selectedStatus === status
+                                ? color.white
+                                : color.darkBlue,
+                            fontWeight: "bold",
+                          }}
+                        >
+                          {status}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                 </View>
               </View>
             </View>
+            <View style={styles.commentContainer}>
+              <View
+                style={{
+                  borderBottomWidth: 1,
+                  marginBottom: 10,
+                  borderBottomColor: color.darkgray,
+                }}
+              ></View>
+              <Text style={styles.commentTitle}>Nhận xét:</Text>
+              <View style={styles.comment}>
+                {comments.map((comment, index) => (
+                  <View key={index}>
+                    <Text style={styles.commentName}>{comment.name}</Text>
+                    <Text style={styles.description}>{comment.text}</Text>
+                  </View>
+                ))}
+              </View>
+              <View style={styles.addComment}>
+                <TextInput
+                  style={styles.commentInput}
+                  placeholder="Nhập nhận xét..."
+                  value={newComment}
+                  onChangeText={setNewComment}
+                />
+                <TouchableOpacity onPress={handleAddComment}>
+                  <Icon
+                    name="send"
+                    size={20}
+                    color={color.mainColor}
+                    style={{ marginLeft: 10 }}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
-        </View>
-      </Animated.View>
-    </GestureDetector>
+        </TouchableWithoutFeedback>
+      </KeyboardAwareScrollView>
+    </KeyboardAvoidingView>
   );
-});
-
-export default ChiTietNhiemVu;
+};
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: color.mainColor,
+    backgroundColor: color.gray,
     flex: 1,
-    borderRadius: 20,
-  },
-  bottomSheetContainer: {
-    height: SCREEN_HEIGHT,
-    width: "100%",
-    backgroundColor: color.white,
-    position: "absolute",
-    top: SCREEN_HEIGHT,
-    borderRadius: 30,
-  },
-  containerHeader: {
-    flexDirection: "row",
-    marginTop: 55,
-    marginBottom: 30,
-  },
-  iconArrowLeft: {
-    marginHorizontal: 20,
-  },
-  textHeader: {
-    color: color.white,
-    fontWeight: "bold",
-    fontSize: 18,
   },
   containerDetailTask: {
     backgroundColor: color.gray,
     flex: 1,
     alignItems: "center",
-    borderRadius: 20,
   },
   taskHeader: {
     height: 50,
@@ -301,7 +264,7 @@ const styles = StyleSheet.create({
   task: {
     backgroundColor: color.white,
     width: "90%",
-    height: 600,
+    height: 500,
     marginTop: 20,
     borderRadius: 20,
   },
@@ -329,7 +292,7 @@ const styles = StyleSheet.create({
   },
   contentTaskContainer: {
     marginTop: 10,
-    height: 200,
+    height: 100,
   },
   date: {
     flexDirection: "row",
@@ -378,4 +341,65 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 20,
   },
+  commentContainer: {
+    marginTop: 15,
+    width: "100%",
+    alignSelf: "center",
+    paddingHorizontal: 25,
+  },
+  comment: {
+    marginTop: 10,
+  },
+  description: {
+    marginBottom: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 8,
+    borderColor: color.darkgray,
+    backgroundColor: color.white,
+  },
+
+  commentTitle: {
+    fontSize: 17,
+    fontWeight: "bold",
+    alignSelf: "center",
+    color: color.darkBlue,
+  },
+  commentName: {
+    color: color.mainColor,
+    fontSize: 15,
+    marginLeft: 5,
+  },
+  commentInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 8,
+    borderColor: color.darkgray,
+    backgroundColor: color.white,
+  },
+  addComment: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: color.white,
+    borderRadius: 10,
+    padding: 10,
+    marginTop: 10,
+    marginBottom: 50,
+  },
+  calendarContainer: {
+    flex: 1,
+    position: "absolute", // Đặt lịch ở vị trí tuyệt đối
+    marginTop: 20,
+    top: "30%", // Điều chỉnh vị trí theo chiều dọc
+    left: "10%", // Điều chỉnh vị trí theo chiều ngang
+    right: "10%", // Điều chỉnh kích thước
+    zIndex: 1, // Đảm bảo lịch hiển thị phía trên các thành phần khác
+  },
+
+  calendar: {
+    backgroundColor: color.white, // Màu nền của lịch
+    borderRadius: 10, // Bo góc lịch
+  },
 });
+export default ChiTietNhiemVu;

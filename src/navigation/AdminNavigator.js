@@ -19,7 +19,30 @@ import ThemNguoiDung from "../module/user/ThemNguoiDung";
 
 // 🏠 Các màn hình quản lý Admin
 function AdminHomeScreen() {
-  return <TrangChuAdmin></TrangChuAdmin>;
+  return (
+    <Stack.Navigator
+      screenOptions={({ navigation }) => ({
+        headerStyle: {
+          height: 110,
+        },
+        // eaderTitle: "",
+        headerTitle: "", // Ẩn tiêu đề mặc định
+        headerLeft: () => (
+          <HeaderLeft title="Trang chủ" navigation={navigation}></HeaderLeft>
+        ),
+      })}
+    >
+      <Stack.Screen
+        name="TrangChuAdmin"
+        component={TrangChuAdmin}
+        options={{
+          title: "Trang chủ",
+        }}
+      />
+    </Stack.Navigator>
+  );
+
+  // <TrangChuAdmin></TrangChuAdmin>;
 }
 function UserManagementScreen() {
   return (
@@ -147,7 +170,7 @@ const AdminNavigator = ({ setUserRole }) => {
         <CustomDrawer {...props} setUserRole={setUserRole} />
       )}
       screenOptions={{
-        headerShown: true,
+        headerShown: false,
         drawerStyle: { backgroundColor: "#fff", width: 250 },
         drawerActiveTintColor: "#007bff",
         drawerInactiveTintColor: "#333",
