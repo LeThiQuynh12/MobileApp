@@ -13,7 +13,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation } from '@react-navigation/native';
 
-const GiaoNhiemVu = () => {
+const SuaCongViec = () => {
   const navigation = useNavigation();
   const [openTopic, setOpenTopic] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState(null);
@@ -131,13 +131,13 @@ const GiaoNhiemVu = () => {
       </View>
 
       <TouchableOpacity style={styles.submitButton}>
-        <Text style={styles.submitButtonText}>Giao</Text>
+        <Text style={styles.submitButtonText}>Sửa</Text>
       </TouchableOpacity>
     </View>
   );
 };
 
-export default GiaoNhiemVu;
+export default SuaCongViec;
 
 const styles = StyleSheet.create({
   container: {

@@ -10,21 +10,16 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
-const yourTopic = [
+const allTopics = [
   {
-    title:
-      "NGHIÊN CỨU CÁC VẤN ĐỀ BẢO MẬT VÀ THỬ NGHIỆM CÁC TÍNH NĂNG BẢO MẬT KHI PHÁT TRIỂN MOBILE APP DỰA TRÊN NỀN TẢNG NATIVE REACT VÀ KOTLIN",
+    title: "NGHIÊN CỨU CÁC VẤN ĐỀ BẢO MẬT VÀ THỬ NGHIỆM CÁC TÍNH NĂNG BẢO MẬT KHI PHÁT TRIỂN MOBILE APP DỰA TRÊN NỀN TẢNG NATIVE REACT VÀ KOTLIN",
     instructor: "TS. Trần Trung",
     leader: "Hoàng Thị Thảo",
     faculty: "Công nghệ thông tin",
     status: "Chưa duyệt",
   },
-];
-
-const otherTopic = [
   {
     title: "PHÁT TRIỂN HỆ THỐNG GỢI Ý SẢN PHẨM DỰA TRÊN AI",
     instructor: "PGS. TS. Nguyễn Văn An",
@@ -50,6 +45,10 @@ const otherTopic = [
 
 const TopicCard = ({ topic }) => {
   const navigation = useNavigation();
+
+  // Màu sắc đậm hơn cho tình trạng
+  const statusColor = topic.status === "Chưa duyệt" ? "#D32F2F" : "#388E3C";
+
   return (
     <View style={styles.card}>
       <View style={styles.cardTitleContainer}>
@@ -64,31 +63,39 @@ const TopicCard = ({ topic }) => {
       <Text style={styles.cardInfo}>Người hướng dẫn: {topic.instructor}</Text>
       <Text style={styles.cardInfo}>Chủ nhiệm đề tài: {topic.leader}</Text>
       <Text style={styles.cardInfo}>Khoa: {topic.faculty}</Text>
-      <Text style={styles.cardInfo}>Tình trạng: {topic.status}</Text>
-      <TouchableOpacity
-        style={styles.detailButton}
-        onPress={() => navigation.navigate("ChiTietDeTai")}
-      >
-        <Text style={styles.detailButtonText}>Chi tiết</Text>
-      </TouchableOpacity>
+      <Text style={[styles.cardInfo, { color: statusColor, fontWeight: "500" }]}>{`Tình trạng: ${topic.status}`}</Text>
+      
+      {/* Các nút "Chi tiết", "Sửa", "Xoá" */}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={styles.detailButton}
+          onPress={() => navigation.navigate("ChiTietDeTai")}
+        >
+          <Text style={styles.detailButtonText}>Duyệt</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() => navigation.navigate("SuaDeTai", { topicId: topic.id })}
+        >
+          <Text style={styles.buttonText}>Sửa</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => {/* Hàm xoá ở đây */}}
+        >
+          <Text style={styles.buttonText}>Xoá</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
-const SVDanhSachDeTai = () => {
-  const navigation = useNavigation(); // Sửa lỗi thiếu navigation
+
+
+const QuanLyDeTai = () => {
+  const navigation = useNavigation();
   return (
     <View style={styles.container}>
-      {/* Thanh tiêu đề */}
-      <View style={styles.header}>
-        <Ionicons
-          name="menu"
-          size={24}
-          color="white"
-          onPress={() => navigation.openDrawer()}
-        />
-        <Text style={styles.headerTitle}>Danh sách đề tài</Text>
-      </View>
       <View style={styles.searchContainer}>
         <Icon name="search" size={19} color="#888" style={styles.searchIcon} />
         <TextInput
@@ -101,12 +108,8 @@ const SVDanhSachDeTai = () => {
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.sectionTitle}>Đề tài của bạn</Text>
-        {yourTopic.map((topic, index) => (
-          <TopicCard key={index} topic={topic} />
-        ))}
-        <Text style={styles.sectionTitle}>Các đề tài khác</Text>
-        {otherTopic.map((topic, index) => (
+        <Text style={styles.sectionTitle}>Quản lý đề tài</Text>
+        {allTopics.map((topic, index) => (
           <TopicCard key={index} topic={topic} />
         ))}
       </ScrollView>
@@ -114,25 +117,12 @@ const SVDanhSachDeTai = () => {
   );
 };
 
-export default SVDanhSachDeTai;
+export default QuanLyDeTai;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F2F2F2",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#64B5F6",
-    padding: 25,
-    paddingTop: 60,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "white",
-    marginLeft: 15,
   },
   searchContainer: {
     flexDirection: "row",
@@ -160,7 +150,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     marginVertical: 10,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
     color: "#64B5F6",
     textAlign: "center",
@@ -170,7 +160,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginBottom: 10,
-    elevation: 2, // bongs
+    elevation: 2,
   },
   cardTitleContainer: {
     flexDirection: "row",
@@ -194,20 +184,47 @@ const styles = StyleSheet.create({
     marginBottom: 2,
     paddingHorizontal: 30,
   },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginTop: 12,
+  },
   detailButton: {
-    marginTop: 8,
-    alignSelf: "center",
-    borderColor: "#64B5F6",
-    borderWidth: 2,
+    // borderColor: "#64B5F6",
+    // borderWidth: 2,
     borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     height: 35,
-    width: 120,
+    width: 100,
+    backgroundColor: "#64B5F6",
   },
   detailButtonText: {
-    color: "#64B5F6",
-    fontSize: 16,
+    color: "#fff",
+    fontSize: 14,
+    textAlign: "center",
+    fontWeight: "bold",
+  },
+  editButton: {
+    backgroundColor: "#66BB6A",
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    height: 35,
+    width: 100,
+  },
+  deleteButton: {
+    backgroundColor: "#FF6B60",
+    // borderWidth: 2,
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    height: 35,
+    width: 100,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 14,
     textAlign: "center",
     fontWeight: "bold",
   },

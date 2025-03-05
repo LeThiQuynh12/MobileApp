@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 import {
   FlatList,
@@ -7,10 +7,10 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from "react-native";
+} from 'react-native';
 
-import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 const TrangChuAdmin = () => {
   const navigation = useNavigation();
@@ -21,60 +21,32 @@ const TrangChuAdmin = () => {
 
   // Danh sách chức năng quản lý
   const menuItems = [
-    {
-      id: "1",
-      title: "Quản lý Người Dùng",
-      icon: "people",
-      screen: "QuanLyNguoiDung",
-    },
-    {
-      id: "2",
-      title: "Danh Sách Giảng Viên",
-      icon: "school",
-      screen: "DSGiangVien",
-    },
-    {
-      id: "3",
-      title: "Danh Sách Sinh Viên",
-      icon: "person",
-      screen: "DSSinhVien",
-    },
+    { id: "1", title: "Quản lý Người Dùng", icon: "people", screen: "QuanLyNguoiDung" },
+    { id: "2", title: "Danh Sách Giảng Viên", icon: "school", screen: "DSGiangVien" },
+    { id: "3", title: "Danh Sách Sinh Viên", icon: "person", screen: "DSSinhVien" },
   ];
 
-  // Render từng mục trong danh sách
   const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() => navigation.navigate(item.screen)}
-    >
-      <Ionicons name={item.icon} size={32} color="#64B5F6" />
+    <TouchableOpacity style={styles.card} onPress={() => navigation.navigate(item.screen)}>
+      <View style={styles.iconContainer}>
+        <Ionicons name={item.icon} size={32} color="white" />
+      </View>
       <Text style={styles.cardText}>{item.title}</Text>
     </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
-      {/* Thanh tiêu đề */}
-      {/* <View style={styles.header}>
-        <Ionicons name="menu" size={24} color="white" onPress={() => navigation.openDrawer()} />
-        <Text style={styles.headerTitle}>Trang chủ</Text>
-      </View> */}
-
       {/* Hình ảnh minh họa */}
-      <Image
-        source={{
-          uri: "https://cdn-icons-png.flaticon.com/128/9422/9422941.png",
-        }}
-        style={styles.image}
-      />
+      <Image source={{ uri: "https://cdn-icons-png.flaticon.com/128/9422/9422941.png" }} style={styles.image} />
 
       {/* Thống kê */}
       <View style={styles.statsContainer}>
-        <View style={styles.statBox}>
+        <View style={[styles.statBox, { backgroundColor: "#42A5F5" }]}> 
           <Text style={styles.statNumber}>{totalUsers}</Text>
           <Text style={styles.statLabel}>Tổng người dùng</Text>
         </View>
-        <View style={styles.statBox}>
+        <View style={[styles.statBox, { backgroundColor: "#66BB6A" }]}> 
           <Text style={styles.statNumber}>{activeUsers}</Text>
           <Text style={styles.statLabel}>Đang truy cập</Text>
         </View>
@@ -94,54 +66,40 @@ const TrangChuAdmin = () => {
 export default TrangChuAdmin;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f5f5f5" },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#64B5F6",
-    padding: 25,
-    paddingTop: 60,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "white",
-    marginLeft: 15,
-  },
+  container: { flex: 1, backgroundColor: "#f8f9fa", paddingTop: 20 },
   image: {
     width: 100,
     height: 100,
     alignSelf: "center",
-    marginTop: 20,
+    marginBottom: 20,
   },
   statsContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
-    marginVertical: 20,
+    marginBottom: 20,
   },
   statBox: {
-    backgroundColor: "white",
-    padding: 15,
-    borderRadius: 10,
+    padding: 20,
+    borderRadius: 15,
     alignItems: "center",
+    width: "45%",
     shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3,
-    width: "40%",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 5,
+    elevation: 5,
   },
   statNumber: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
-    color: "#333",
+    color: "white",
   },
   statLabel: {
     fontSize: 14,
-    color: "#666",
+    color: "white",
   },
   listContainer: {
-    padding: 20,
+    paddingHorizontal: 20,
   },
   card: {
     flexDirection: "row",
@@ -149,16 +107,22 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     padding: 20,
     marginVertical: 10,
-    borderRadius: 10,
+    borderRadius: 15,
     shadowColor: "#000",
     shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3, // Hiệu ứng đổ bóng Android
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 5,
+    elevation: 4,
+  },
+  iconContainer: {
+    backgroundColor: "#64B5F6",
+    padding: 10,
+    borderRadius: 10,
   },
   cardText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
     marginLeft: 15,
+    color: "#333",
   },
 });

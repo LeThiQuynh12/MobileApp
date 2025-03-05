@@ -1,21 +1,34 @@
-import React from "react";
-import { View, Text, TouchableOpacity, Alert } from "react-native";
+import React from 'react';
+
 import {
+  Text,
+  TouchableOpacity,
+} from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
+
+import { Ionicons } from '@expo/vector-icons';
+import {
+  createDrawerNavigator,
   DrawerContentScrollView,
   DrawerItemList,
-  createDrawerNavigator,
-} from "@react-navigation/drawer";
-import { createStackNavigator } from "@react-navigation/stack";
-import { NavigationContainer } from "@react-navigation/native";
-import Icon from "react-native-vector-icons/FontAwesome";
-import TrangChuAdmin from "../screens/(Admin)/TrangChuAdmin";
-import QuanLyNguoiDung from "../screens/(Admin)/QuanLyNguoiDung";
-import SuaNguoiDung from "../module/user/SuaNguoiDung";
-import BackButton from "../components/BackButton";
-import color from "../utils/color";
-import HeaderLeft from "../components/HeaderLeft";
-import HeaderPlusIcon from "../components/HeaderRightPlus";
-import ThemNguoiDung from "../module/user/ThemNguoiDung";
+} from '@react-navigation/drawer';
+import { createStackNavigator } from '@react-navigation/stack';
+
+import BackButton from '../components/BackButton';
+import HeaderLeft from '../components/HeaderLeft';
+import HeaderPlusIcon from '../components/HeaderRightPlus';
+import GiaoNhiemVu from '../module/task/GiaoNhiemVu';
+import ChiTietDeTai from '../module/topic/ChiTietDeTai';
+import SuaNguoiDung from '../module/user/SuaNguoiDung';
+import ThemDeTai from '../module/user/ThemDeTai';
+import ThemNguoiDung from '../module/user/ThemNguoiDung';
+import QuanLyCongViec from '../screens/(Admin)/QuanLyCongViec';
+import QuanLyDeTai from '../screens/(Admin)/QuanLyDeTai';
+import QuanLyNguoiDung from '../screens/(Admin)/QuanLyNguoiDung';
+import SuaCongViec from '../screens/(Admin)/SuaCongViec';
+import SuaDeTai from '../screens/(Admin)/SuaDeTai';
+import TrangChuAdmin from '../screens/(Admin)/TrangChuAdmin';
+import color from '../utils/color';
 
 // 🏠 Các màn hình quản lý Admin
 function AdminHomeScreen() {
@@ -85,12 +98,145 @@ function UserManagementScreen() {
     </Stack.Navigator>
   );
 }
+
 function TopicManagementScreen() {
-  return <Text>Quản lý đề tài</Text>;
+  return (
+    <Stack.Navigator
+      screenOptions={({ navigation }) => ({
+        headerStyle: {
+          height: 110,
+        },
+        // eaderTitle: "",
+        headerTitle: "", // Ẩn tiêu đề mặc định
+        headerLeft: () => (
+          <HeaderLeft
+            title="Quản lý đề tài"
+            navigation={navigation}
+          ></HeaderLeft>
+        ),
+        headerRight: () => (
+          <HeaderPlusIcon navigation={navigation} destination="ThemDeTai" />
+        ),
+      })}
+    >
+      <Stack.Screen
+        name="QuanLyDeTai"
+        component={QuanLyDeTai}
+        options={{
+          title: "Quản lý đề tài",
+        }}
+      />
+      <Stack.Screen name="ThemDeTai"
+      component={ThemDeTai}
+      options={{
+        headerShown: false,
+      }}/>
+        <Stack.Screen
+  name="ChiTietDeTai"
+  component={ChiTietDeTai}
+  options={{
+    headerTitle: "Chi tiết Đề tài",
+    headerStyle: {
+      backgroundColor: color.mainColor, // Màu xanh cho header
+    },
+    headerTitleStyle: {
+      fontSize: 18,
+      color: color.white,
+    },
+    headerTintColor: color.white, // Màu chữ trắng để dễ đọc
+    headerLeft: () => <BackButton />, // Thêm nút quay lại
+  }}
+/>
+<Stack.Screen
+  name="SuaDeTai"
+  component={SuaDeTai}
+  options={{
+headerShown: false,
+  }}
+/>
+
+    </Stack.Navigator>
+  );
 }
+
 function TaskManagementScreen() {
-  return <Text>Quản lý công việc</Text>;
+  return (
+    <Stack.Navigator
+      screenOptions={({ navigation }) => ({
+        headerStyle: {
+          height: 110,
+        },
+        headerTitle: "",
+        headerLeft: () => (
+          <HeaderLeft title="Quản lý công việc" navigation={navigation} />
+        ),
+        // headerRight: () => (
+        //   <HeaderPlusIcon navigation={navigation} destination="GiaoNhiemVu" />
+        // ),
+      })}
+    >
+      {/* Màn hình danh sách công việc */}
+      <Stack.Screen
+  name="QuanLyCongViec"
+  component={QuanLyCongViec}
+  options={({ navigation }) => ({
+    headerRight: () => (
+      <HeaderPlusIcon navigation={navigation} destination="GiaoNhiemVu" />
+    ),
+  })}
+/>
+
+     <Stack.Screen
+  name="GiaoNhiemVu"
+  component={GiaoNhiemVu}
+  options={({ navigation }) => ({
+    headerTitle: "Giao Nhiệm Vụ",
+    headerStyle: {
+      backgroundColor: color.mainColor, // Màu nền cho header
+    },
+    headerTitleStyle: {
+      fontSize: 18,
+      color: color.white, // Màu chữ trắng
+    },
+    headerTintColor: color.white, // Màu của nút back
+    headerLeft: () => (
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
+        style={{ paddingLeft: 15 }}
+      >
+        <Ionicons name="arrow-back" size={24} color="white" />
+      </TouchableOpacity>
+    ),
+  })}
+/>
+<Stack.Screen
+  name="SuaCongViec"
+  component={SuaCongViec}
+  options={({ navigation }) => ({
+    headerTitle: "Sửa công việc",
+    headerStyle: {
+      backgroundColor: color.mainColor, // Màu nền cho header
+    },
+    headerTitleStyle: {
+      fontSize: 18,
+      color: color.white, // Màu chữ trắng
+    },
+    headerTintColor: color.white, // Màu của nút back
+    headerLeft: () => (
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
+        style={{ paddingLeft: 15 }}
+      >
+        <Ionicons name="arrow-back" size={24} color="white" />
+      </TouchableOpacity>
+    ),
+  })}
+/>
+     
+    </Stack.Navigator>
+  );
 }
+
 function ReviewManagementScreen() {
   return <Text>Quản lý đánh giá</Text>;
 }
@@ -178,6 +324,7 @@ const AdminNavigator = ({ setUserRole }) => {
         name="TopicManagement"
         component={TopicManagementScreen}
         options={{
+          headerShown: false,
           title: "Quản lý Đề tài",
           drawerIcon: ({ color, size }) => (
             <Icon name="file-text" size={size} color={color} />
@@ -188,6 +335,7 @@ const AdminNavigator = ({ setUserRole }) => {
         name="TaskManagement"
         component={TaskManagementScreen}
         options={{
+          headerShown: false,
           title: "Quản lý Công việc",
           drawerIcon: ({ color, size }) => (
             <Icon name="tasks" size={size} color={color} />
@@ -224,6 +372,8 @@ const AdminNavigator = ({ setUserRole }) => {
           ),
         }}
       />
+
+      
     </Drawer.Navigator>
   );
 };
