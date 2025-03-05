@@ -84,6 +84,7 @@ const QuanLyNguoiDung = () => {
 
       {/* Danh sách người dùng */}
       <FlatList
+        style={{ flex: 1 }}
         data={users}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (

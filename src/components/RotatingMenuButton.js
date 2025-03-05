@@ -1,7 +1,8 @@
-import { FontAwesome6 } from "@expo/vector-icons";
-import { Text, TouchableOpacity, Animated, View } from "react-native";
-import color from "../utils/color";
 import React, { useRef } from "react";
+import { Animated, TouchableOpacity } from "react-native";
+import { FontAwesome6 } from "@expo/vector-icons";
+import HeaderLeft from "./HeaderLeft";
+import color from "../utils/color";
 
 const RotatingMenuButton = ({ navigation, title }) => {
   const rotateAnim = useRef(new Animated.Value(0)).current;
@@ -26,7 +27,7 @@ const RotatingMenuButton = ({ navigation, title }) => {
   return (
     <>
       {/* Giữ lại tiêu đề */}
-      {/* <HeaderLeft title={title} navigation={navigation} /> */}
+      <HeaderLeft title={title} navigation={navigation} />
 
       {/* Nút mở Drawer có hiệu ứng xoay */}
       <TouchableOpacity
@@ -41,29 +42,8 @@ const RotatingMenuButton = ({ navigation, title }) => {
           />
         </Animated.View>
       </TouchableOpacity>
-      <Text style={{ fontSize: 18, fontWeight: "400", fontWeight: "500" }}>
-        {title}
-      </Text>
     </>
   );
 };
-
-function HeaderLeft({ title, navigation }) {
-  return (
-    <View style={{ flexDirection: "row", alignItems: "center" }}>
-      <TouchableOpacity
-        onPress={() => {
-          navigation.openDrawer();
-        }}
-        style={{ marginLeft: 20, marginRight: 20 }}
-      >
-        <FontAwesome6 name="bars-staggered" size={21} color={color.darkBlue} />
-      </TouchableOpacity>
-      <Text style={{ fontSize: 18, fontWeight: "400", fontWeight: "500" }}>
-        {title}
-      </Text>
-    </View>
-  );
-}
 
 export default RotatingMenuButton;

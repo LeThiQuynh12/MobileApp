@@ -174,6 +174,7 @@ function DanhSachDeTaiStack() {
           headerLeft: () => <BackButton />, // Thay menu bằng nút quay lại
         }}
       />
+
       {/* Giao nhiệm vụ */}
       <Stack.Screen
         name="GiaoNhiemVu"
