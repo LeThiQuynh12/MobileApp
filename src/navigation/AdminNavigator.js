@@ -29,7 +29,9 @@ import SuaCongViec from '../screens/(Admin)/SuaCongViec';
 import SuaDeTai from '../screens/(Admin)/SuaDeTai';
 import TrangChuAdmin from '../screens/(Admin)/TrangChuAdmin';
 import color from '../utils/color';
-
+import QuanLyTaiLieu from '../screens/(Admin)/QuanLyTaiLieu';
+import QuanLyDanhGia from '../screens/(Admin)/QuanLyDanhGia';
+import ThongBao from '../screens/(Admin)/ThongBao';
 // 🏠 Các màn hình quản lý Admin
 function AdminHomeScreen() {
   return (
@@ -261,13 +263,73 @@ function TaskManagementScreen() {
 }
 
 function ReviewManagementScreen() {
-  return <Text>Quản lý đánh giá</Text>;
+  return (
+    <Stack.Navigator
+      screenOptions={({ navigation }) => ({
+        headerStyle: {
+          height: 110,
+        },
+        headerTitle: "", // Ẩn tiêu đề mặc định
+        headerLeft: () => (
+          <HeaderLeft title="Quản lý đánh giá" navigation={navigation} />
+        ),
+      })}
+    >
+      <Stack.Screen
+        name="QuanLyDanhGia"
+        component={QuanLyDanhGia}
+        options={{
+          title: "Quản lý Đánh giá",
+        }}
+      />
+    </Stack.Navigator>
+  );
 }
 function DocumentManagementScreen() {
-  return <Text>Quản lý tài liệu</Text>;
+  return (
+    <Stack.Navigator
+      screenOptions={({ navigation }) => ({
+        headerStyle: {
+          height: 110,
+        },
+        headerTitle: "", // Ẩn tiêu đề mặc định
+        headerLeft: () => (
+          <HeaderLeft title="Quản lý tài liệu" navigation={navigation} />
+        ),
+      })}
+    >
+      <Stack.Screen
+        name="QuanLyTaiLieu"
+        component={QuanLyTaiLieu}
+        options={{
+          title: "Quản lý Tài liệu",
+        }}
+      />
+    </Stack.Navigator>
+  );
 }
 function NotificationScreen() {
-  return <Text>Thông báo</Text>;
+  return (
+    <Stack.Navigator
+      screenOptions={({ navigation }) => ({
+        headerStyle: {
+          height: 110,
+        },
+        headerTitle: "", // Ẩn tiêu đề mặc định
+        headerLeft: () => (
+          <HeaderLeft title="Thông Báo" navigation={navigation} />
+        ),
+      })}
+    >
+      <Stack.Screen
+        name="ThongBao"
+        component={ThongBao}
+        options={{
+          title: "Thông Báo",
+        }}
+      />
+    </Stack.Navigator>
+  );
 }
 
 // 🛠 Custom Drawer (thêm chức năng Đăng xuất)
