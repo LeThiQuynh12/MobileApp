@@ -1,7 +1,21 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
-import color from "../../utils/color";
+import React, {
+  useEffect,
+  useState,
+} from 'react';
+
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+
+import {
+  FontAwesome,
+  MaterialIcons,
+} from '@expo/vector-icons';
+
+import color from '../../utils/color';
 
 const daysOfWeek = [
     "Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"
@@ -10,9 +24,23 @@ const daysOfWeek = [
 const today = new Date();
 
 const SupervisionTopics = () => {
+    
+    const getData = async () => {
+        try {
+            const response = await fetch('http://192.168.1.100:8080/api/tailieu');
+          const data = await response.json();
+          console.log(data); // Dữ liệu từ API
+        } catch (error) {
+          console.error('Lỗi khi gọi API:', error);
+        }
+      };
+      
+      useEffect(() => {
+        getData();
+      }, []);
     const [expandedTopic1, setExpandedTopic1] = useState(false);
     const [expandedTopic2, setExpandedTopic2] = useState(false);
-
+      console.log(123)
     return (
         <View style={styles.container}>
             {/* Header */}
