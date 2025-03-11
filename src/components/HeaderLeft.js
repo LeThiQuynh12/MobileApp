@@ -20,7 +20,7 @@ const RotatingMenuButton = ({ navigation, title }) => {
 
   const spin = rotateAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ["0deg", "360deg"],
+    outputRange: ["0deg", "180deg"],
   });
 
   return (

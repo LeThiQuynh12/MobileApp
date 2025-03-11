@@ -6,7 +6,6 @@ import {
   View,
   Image,
   TextInput,
-  ScrollView,
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
@@ -16,15 +15,66 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import color from "../utils/color";
 import { useNavigation } from "@react-navigation/native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import axios from "axios";
+import api, { API_URL, getTokens, saveTokens } from "../utils/api";
+
 const DangNhap = ({ setUserRole = null }) => {
   const navigation = useNavigation();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [selectedRole, setSelectedRole] = useState("Giảng viên");
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState("");
 
-  const handleHome = () => {
+  const handleHome = async () => {
+    // console.log("API_URL", API_URL);
+    // console.log(email, password);
+    const loginData = {
+      username: email,
+      password,
+    };
+    // axios
+    //   .post(API_URL + "/auth/login", loginData, {
+    //     headers: {
+    //       "Content-Type": "application/json", // Xác định dữ liệu là JSON
+    //       Accept: "application/json", // Chấp nhận phản hồi JSON
+    //     },
+    //     // withCredentials: true, // Cho phép gửi & nhận cookie từ server
+    //   })
+    //   .then((response) => {
+    //     // console.log("Đăng nhập thành công:", response.data);
+    //     const access_token = response.data.results.access_token;
+    //     const refresh_token = response.data.results.refresh_token;
+    //     // console.log("token: ", access_token, refresh_token);
+    //     // localStorage.setItem("access_token", access_token);
+    //     // localStorage.setItem("refresh_token", refresh_token);
+    //     // navigation("/");
+    //     // Lưu token
+    //     saveTokens({ access_token, refresh_token });
+    //   })
+    //   .catch((error) => {
+    //     console.error(
+    //       "Lỗi đăng nhập:",
+    //       error.response ? error.response.data : error.message
+    //     );
+    //   });
+
+    // Gửi request POST
+    try {
+      const response = await api.post("/auth/login", loginData);
+      console.log("Đăng nhập thành công:", response.data.results);
+      const access_token = response.data.results.access_token;
+      const refresh_token = response.data.results.refresh_token;
+      await saveTokens({ access_token, refresh_token });
+      // navigation("/");
+    } catch (error) {
+      console.error("Lỗi đăng nhập:", error);
+    }
+
+    // console.log("token: ", await getTokens());
+
     if (selectedRole === "Giảng viên") {
       setUserRole("giangvien");
     } else if (selectedRole === "Sinh viên") {
@@ -118,7 +168,12 @@ const DangNhap = ({ setUserRole = null }) => {
                 size={20}
                 color={color.darkgray}
               />
-              <TextInput style={styles.input} placeholder="Nhập tài khoản" />
+              <TextInput
+                style={styles.input}
+                placeholder="Nhập email"
+                value={email}
+                onChangeText={setEmail}
+              />
             </View>
 
             <View style={styles.inputContainer}>
@@ -129,6 +184,8 @@ const DangNhap = ({ setUserRole = null }) => {
                 color={color.darkgray}
               />
               <TextInput
+                value={password}
+                onChangeText={setPassword}
                 style={styles.input}
                 placeholder="Nhập mật khẩu"
                 secureTextEntry={!isPasswordVisible}

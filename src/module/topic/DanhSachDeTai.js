@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import {
   ScrollView,
@@ -12,6 +12,7 @@ import Icon from "react-native-vector-icons/FontAwesome";
 
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import api from "../../utils/api";
 
 const yourTopic = [
   {
@@ -50,6 +51,22 @@ const otherTopic = [
 
 const TopicCard = ({ topic }) => {
   const navigation = useNavigation();
+  const [topics, setTopics] = useState([]);
+
+  // Gửi request GET
+  const fetchData = async () => {
+    try {
+      const response = await api.get("/topics");
+      // console.log("Dữ liệu người dùng:", response.data.results);
+      setTopics(response.data.results);
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+    }
+  };
+  useEffect(() => {
+    fetchData();
+  }, []);
+  console.log("topics: ", topics);
   return (
     <View style={styles.card}>
       <View style={styles.cardTitleContainer}>
