@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -17,9 +17,11 @@ import { useNavigation } from "@react-navigation/native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import axios from "axios";
 import api, { API_URL, getTokens, saveTokens } from "../utils/api";
+import { AuthContext } from "../context/AuthContext";
 
 const DangNhap = ({ setUserRole = null }) => {
   const navigation = useNavigation();
+  const { login, getCurrentUser } = useContext(AuthContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [selectedRole, setSelectedRole] = useState("Giảng viên");
@@ -63,11 +65,15 @@ const DangNhap = ({ setUserRole = null }) => {
 
     // Gửi request POST
     try {
-      const response = await api.post("/auth/login", loginData);
-      console.log("Đăng nhập thành công:", response.data.results);
-      const access_token = response.data.results.access_token;
-      const refresh_token = response.data.results.refresh_token;
-      await saveTokens({ access_token, refresh_token });
+      // const response = await api.post("/auth/login", loginData);
+      // console.log("Đăng nhập thành công:", response.data.results);
+      // const access_token = response.data.results.access_token;
+      // const refresh_token = response.data.results.refresh_token;
+      // await saveTokens({ access_token, refresh_token });
+      // await getCurrentUser();
+      await login(loginData.username, loginData.password);
+      // setSelectedRole("admin");
+      // setUserRole("admin");
       // navigation("/");
     } catch (error) {
       console.error("Lỗi đăng nhập:", error);

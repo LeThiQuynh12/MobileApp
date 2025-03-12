@@ -7,11 +7,18 @@ export const API_URL = "http://10.0.2.2:8080/api";
 export const saveTokens = async ({
   access_token,
   refresh_token,
-  expires_in = 1000,
+  access_expires_in = 1000,
+  refresh_expires_in = 1000,
 }) => {
   try {
-    const expires_at = Date.now() + expires_in * 1000; // Tính thời gian hết hạn (millisecond)
-    const tokens = JSON.stringify({ access_token, refresh_token, expires_at });
+    const access_expires_at = Date.now() + access_expires_in * 1000; // Tính thời gian hết hạn (millisecond)
+    const refresh_expires_at = Date.now() + refresh_expires_in * 1000; // Tính thời gian hết hạn (millisecond)
+    const tokens = JSON.stringify({
+      access_token,
+      refresh_token,
+      access_expires_at,
+      refresh_expires_at,
+    });
     // console.log(access_token, refresh_token);
     await AsyncStorage.setItem("authTokens", tokens);
     console.log("save token success");
@@ -28,12 +35,23 @@ export const getTokens = async () => {
     const tokens = await AsyncStorage.getItem("authTokens");
     if (!tokens) return null;
 
-    const { access_token, refresh_token, expires_at } = JSON.parse(tokens);
+    const {
+      access_token,
+      refresh_token,
+      access_expires_at,
+      refresh_expires_at,
+    } = JSON.parse(tokens);
 
-    // Kiểm tra token có hết hạn không
-    if (Date.now() > expires_at) {
-      console.warn("Access token đã hết hạn! Đang làm mới...");
-      return await refreshTokens(refresh_token); // Gọi hàm refresh nếu hết hạn
+    if (Date.now() > refresh_expires_at) {
+      console.warn("Refresh token đã hết hạn! Yêu cầu đăng nhập lại.");
+      await removeTokens();
+      return null;
+    }
+
+    if (Date.now() > access_expires_at) {
+      console.warn("Access token hết hạn! Đang làm mới...");
+      const newTokens = await refreshTokens(refresh_token);
+      return newTokens || null;
     }
 
     return { access_token, refresh_token };

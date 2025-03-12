@@ -10,7 +10,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/FontAwesome";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 // // Import các màn hình
 // import HomeScreen from "../../src/screens/HomeScreen";
@@ -30,6 +30,8 @@ import HeaderPlusIcon from "../components/HeaderRightPlus";
 import ChiTietNhiemVu from "../module/task/ChiTietNhiemVu";
 import DanhSachNhiemVu from "../module/task/DanhSachNhiemVu";
 import GiaoNhiemVu from "../module/task/GiaoNhiemVu";
+import { AuthContext } from "../context/AuthContext";
+import api from "../utils/api";
 
 // Tạo các navigator
 const Drawer = createDrawerNavigator();
@@ -297,6 +299,8 @@ function BottomTabs() {
 
 // 🛠 Drawer Navigation
 function CustomDrawerContent(props) {
+  const { user, logout } = useContext(AuthContext);
+  console.log(user);
   const { state, navigation } = props;
   const currentRoute =
     state.routes[state.index]?.state?.routes?.[
@@ -314,10 +318,9 @@ function CustomDrawerContent(props) {
           source={{ uri: "https://i.imgur.com/6VBx3io.png" }}
           style={styles.avatar}
         />
-        <Text style={styles.userName}>Trần Trung</Text>
-        <Text style={styles.userEmail}>trungt@gmail.com</Text>
+        <Text style={styles.userName}>{user?.fullName || "Lecturer name"}</Text>
+        <Text style={styles.userEmail}>{user?.email || "Lecture email"}</Text>
       </View>
-
       <View style={styles.menuItems}>
         {[
           { label: "Trang chủ", icon: "home", route: "Home" },
@@ -349,11 +352,13 @@ function CustomDrawerContent(props) {
           );
         })}
       </View>
-
       <View style={styles.logoutContainer}>
         <TouchableOpacity
           style={styles.logoutButton}
-          onPress={() => navigation.navigate("DangNhap")}
+          onPress={async () => {
+            navigation.navigate("DangNhap");
+            await logout();
+          }}
         >
           <Icon name="sign-out" size={20} color="black" />
           <Text style={styles.logoutText}>Đăng xuất</Text>
