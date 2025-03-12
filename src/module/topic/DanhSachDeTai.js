@@ -57,7 +57,7 @@ const TopicCard = ({ topic }) => {
   const fetchData = async () => {
     try {
       const response = await api.get("/topics");
-      // console.log("Dữ liệu người dùng:", response.data.results);
+      // console.log("Dữ liệu trả về:", response.data.results);
       setTopics(response.data.results);
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error);
