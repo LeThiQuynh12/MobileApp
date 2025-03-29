@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from 'react';
 
 import {
   ScrollView,
@@ -7,12 +7,11 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from "react-native";
-import Icon from "react-native-vector-icons/FontAwesome";
+} from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
-import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
-import api from "../../utils/api";
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 const yourTopic = [
   {
@@ -51,46 +50,60 @@ const otherTopic = [
 
 const TopicCard = ({ topic }) => {
   const navigation = useNavigation();
-  const [topics, setTopics] = useState([]);
 
-  // Gửi request GET
-  const fetchData = async () => {
-    try {
-      const response = await api.get("/topics");
-      // console.log("Dữ liệu trả về:", response.data.results);
-      setTopics(response.data.results);
-    } catch (error) {
-      console.error("Lỗi khi lấy dữ liệu:", error);
-    }
-  };
-  useEffect(() => {
-    fetchData();
-  }, []);
-  console.log("topics: ", topics);
   return (
-    <View style={styles.card}>
-      <View style={styles.cardTitleContainer}>
-        <Icon
-          name="bar-chart"
-          size={22}
-          color="#64B5F6"
-          style={styles.cardTitleIcon}
-        />
+    <TouchableOpacity
+      style={[
+        styles.card,
+        { borderLeftColor: topic.status === "Đã duyệt" ? "#4CAF50" : "#E53935" },
+      ]}
+      activeOpacity={0.9}
+      onPress={() => navigation.navigate("ChiTietDeTai")}
+    >
+
+
+      <View style={styles.cardHeader}>
+        <Ionicons name="book-outline" size={24} color="#64B5F6" />
         <Text style={styles.cardTitle}>{topic.title}</Text>
       </View>
-      <Text style={styles.cardInfo}>Người hướng dẫn: {topic.instructor}</Text>
-      <Text style={styles.cardInfo}>Chủ nhiệm đề tài: {topic.leader}</Text>
-      <Text style={styles.cardInfo}>Khoa: {topic.faculty}</Text>
-      <Text style={styles.cardInfo}>Tình trạng: {topic.status}</Text>
+
+      {/* Dùng icon thay cho emoji */}
+      <View style={styles.cardRow}>
+        <Ionicons name="person-outline" size={18} color="#555" />
+        <Text style={styles.cardInfo}>Người hướng dẫn: {topic.instructor}</Text>
+      </View>
+
+      <View style={styles.cardRow}>
+        <Ionicons name="people-outline" size={18} color="#555" />
+        <Text style={styles.cardInfo}>Chủ nhiệm: {topic.leader}</Text>
+      </View>
+
+      <View style={styles.cardRow}>
+        <Ionicons name="school-outline" size={18} color="#555" />
+        <Text style={styles.cardInfo}>Khoa: {topic.faculty}</Text>
+      </View>
+
+      {/* Icon trạng thái */}
+      <View style={styles.statusContainer}>
+        {topic.status === "Đã duyệt" ? (
+          <Ionicons name="checkmark-circle" size={22} color="#4CAF50" />
+        ) : (
+          <Ionicons name="close-circle" size={22} color="#E53935" />
+        )}
+        <Text style={styles.statusText}>{topic.status}</Text>
+      </View>
+
+      {/* Nút "Chi tiết" căn giữa */}
       <TouchableOpacity
         style={styles.detailButton}
         onPress={() => navigation.navigate("ChiTietDeTai")}
       >
         <Text style={styles.detailButtonText}>Chi tiết</Text>
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 };
+
 
 const DanhSachDeTai = () => {
   const navigation = useNavigation(); // Sửa lỗi thiếu navigation
@@ -107,11 +120,11 @@ const DanhSachDeTai = () => {
         <Text style={styles.headerTitle}>Danh sách đề tài</Text>
       </View> */}
       <View style={styles.searchContainer}>
-        <Icon name="search" size={19} color="#888" style={styles.searchIcon} />
+        <Icon name="search" size={19} color="#64B5F6" style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Lọc theo người hướng dẫn, chủ nhiệm đề tài,..."
-          placeholderTextColor="#999"
+          placeholder="   Lọc theo người hướng dẫn, chủ nhiệm đề tài,..."
+          placeholderTextColor="#64B5F6"
         />
       </View>
       <ScrollView
@@ -126,6 +139,7 @@ const DanhSachDeTai = () => {
         {otherTopic.map((topic, index) => (
           <TopicCard key={index} topic={topic} />
         ))}
+
       </ScrollView>
     </View>
   );
@@ -137,95 +151,119 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F2F2F2",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#64B5F6",
-    padding: 25,
-    paddingTop: 60,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "white",
-    marginLeft: 15,
+    paddingHorizontal: 15,
   },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
-    marginHorizontal: 10,
     marginTop: 10,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    elevation: 2,
-  },
-  searchIcon: {
-    marginRight: 8,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    elevation: 3,
+    borderWidth: 2,
+    borderColor: "#64B5F6",
   },
   searchInput: {
     flex: 1,
-    height: 40,
+    height: 42,
+    fontSize: 16,
     color: "#333",
-    fontSize: 15,
   },
   scrollView: {
-    flex: 1,
-    marginHorizontal: 15,
     marginTop: 10,
   },
   sectionTitle: {
-    marginVertical: 10,
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#64B5F6",
+    fontSize: 14,
+    // fontWeight: "bold",
+    color: "#00",
     textAlign: "center",
+    marginVertical: 15,
+    borderBottomColor: "#000",
+    borderBottomWidth: 1,
+    marginHorizontal: 70,
+    paddingBottom: 10,
   },
+
   card: {
     backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 10,
-    elevation: 2, // bongs
+    borderRadius: 10,
+    padding: 14,
+    marginBottom: 12,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 4 },
+    borderLeftWidth: 6,
   },
-  cardTitleContainer: {
+  cardHeader: {
     flexDirection: "row",
     alignItems: "center",
-  },
-  cardTitleIcon: {
-    marginRight: 8,
+    marginBottom: 8,
   },
   cardTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "bold",
-    marginBottom: 6,
-    marginRight: 25,
     color: "#64B5F6",
-    paddingHorizontal: 13,
-    textAlign: "justify",
+    flex: 1,
+    marginLeft: 10,
   },
   cardInfo: {
     fontSize: 14,
     color: "#333",
-    marginBottom: 2,
-    paddingHorizontal: 30,
+    marginBottom: 4,
+  },
+  statusBadge: {
+    alignSelf: "flex-start",
+    marginTop: 10,
+    paddingVertical: 5,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    color: "#fff",
+    fontWeight: "bold",
   },
   detailButton: {
     marginTop: 8,
-    alignSelf: "center",
-    borderColor: "#64B5F6",
-    borderWidth: 2,
-    borderRadius: 6,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#64B5F6",
+    borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 6,
     height: 35,
     width: 120,
   },
   detailButtonText: {
-    color: "#64B5F6",
+    color: "#fff",
     fontSize: 16,
     textAlign: "center",
     fontWeight: "bold",
+  },
+   // ✅ Bổ sung style cho hàng chứa icon + text
+   cardRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  cardInfo: {
+    fontSize: 14,
+    color: "#333",
+    marginLeft: 6, // 🔹 Để text cách icon một chút
+  },
+  
+  statusContainer: {
+    flexDirection: "row",
+    marginTop: 8,
+    marginBottom: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    backgroundColor: "#F2F2F9",
+    marginRight: 200,
+  },
+  statusText: {
+    fontSize: 15,
+    marginLeft: 6,
   },
 });

@@ -1,23 +1,29 @@
-import React, { useContext, useState } from "react";
+import React, {
+  useContext,
+  useState,
+} from 'react';
+
 import {
-  StyleSheet,
-  TouchableOpacity,
-  Text,
-  View,
   Image,
-  TextInput,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
   TouchableWithoutFeedback,
-  Keyboard,
-} from "react-native";
-import Icon from "react-native-vector-icons/FontAwesome";
-import color from "../utils/color";
-import { useNavigation } from "@react-navigation/native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import axios from "axios";
-import api, { API_URL, getTokens, saveTokens } from "../utils/api";
-import { AuthContext } from "../context/AuthContext";
+  View,
+} from 'react-native';
+import {
+  KeyboardAwareScrollView,
+} from 'react-native-keyboard-aware-scroll-view';
+import Icon from 'react-native-vector-icons/FontAwesome';
+
+import { useNavigation } from '@react-navigation/native';
+
+import { AuthContext } from '../context/AuthContext';
+import color from '../utils/color';
 
 const DangNhap = ({ setUserRole = null }) => {
   const navigation = useNavigation();
