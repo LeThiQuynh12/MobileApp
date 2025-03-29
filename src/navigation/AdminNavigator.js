@@ -23,15 +23,16 @@ import SuaNguoiDung from '../module/user/SuaNguoiDung';
 import ThemDeTai from '../module/user/ThemDeTai';
 import ThemNguoiDung from '../module/user/ThemNguoiDung';
 import QuanLyCongViec from '../screens/(Admin)/QuanLyCongViec';
+import QuanLyDanhGia from '../screens/(Admin)/QuanLyDanhGia';
 import QuanLyDeTai from '../screens/(Admin)/QuanLyDeTai';
 import QuanLyNguoiDung from '../screens/(Admin)/QuanLyNguoiDung';
+import QuanLyTaiLieu from '../screens/(Admin)/QuanLyTaiLieu';
 import SuaCongViec from '../screens/(Admin)/SuaCongViec';
 import SuaDeTai from '../screens/(Admin)/SuaDeTai';
+import ThongBao from '../screens/(Admin)/ThongBao';
 import TrangChuAdmin from '../screens/(Admin)/TrangChuAdmin';
 import color from '../utils/color';
-import QuanLyTaiLieu from '../screens/(Admin)/QuanLyTaiLieu';
-import QuanLyDanhGia from '../screens/(Admin)/QuanLyDanhGia';
-import ThongBao from '../screens/(Admin)/ThongBao';
+
 // 🏠 Các màn hình quản lý Admin
 function AdminHomeScreen() {
   return (
@@ -67,10 +68,10 @@ function UserManagementScreen() {
           height: 110,
         },
         // eaderTitle: "",
-        headerTitle: "", // Ẩn tiêu đề mặc định
+        headerTitle: "Quản lý người dùng", // Ẩn tiêu đề mặc định
         headerLeft: () => (
           <HeaderLeft
-            title="Quản lý người dùng"
+            // title="Quản lý người dùng"
             navigation={navigation}
           ></HeaderLeft>
         ),

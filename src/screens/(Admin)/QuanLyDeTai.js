@@ -10,11 +10,12 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
 const allTopics = [
   {
-    title: "NGHIÊN CỨU CÁC VẤN ĐỀ BẢO MẬT VÀ THỬ NGHIỆM CÁC TÍNH NĂNG BẢO MẬT KHI PHÁT TRIỂN MOBILE APP DỰA TRÊN NỀN TẢNG NATIVE REACT VÀ KOTLIN",
+    title: "NGHIÊN CỨU CÁC VẤN ĐỀ BẢO MẬT VÀ THỬ NGHIỆM CÁC TÍNH NĂNG BẢO MẬT",
     instructor: "TS. Trần Trung",
     leader: "Hoàng Thị Thảo",
     faculty: "Công nghệ thông tin",
@@ -28,87 +29,82 @@ const allTopics = [
     status: "Đã duyệt",
   },
   {
-    title: "PHÂN TÍCH DỮ LIỆU Y TẾ SỬ DỤNG MACHINE LEARNING",
-    instructor: "ThS. Phạm Ngọc Hà",
-    leader: "Nguyễn Thị Minh",
-    faculty: "Y sinh học",
+    title: "PHÁT TRIỂN HỆ THỐNG GỢI Ý SẢN PHẨM DỰA TRÊN AI",
+    instructor: "PGS. TS. Nguyễn Văn An",
+    leader: "Trần Minh Tâm",
+    faculty: "Công nghệ thông tin",
     status: "Đã duyệt",
   },
   {
-    title: "NGHIÊN CỨU VÀ PHÁT TRIỂN PHẦN MỀM PHÒNG CHỐNG DDOS TỰ ĐỘNG",
-    instructor: "TS. Khánh Linh",
-    leader: "Nguyễn Thị Thảo",
+    title: "PHÁT TRIỂN HỆ THỐNG GỢI Ý SẢN PHẨM DỰA TRÊN AI",
+    instructor: "PGS. TS. Nguyễn Văn An",
+    leader: "Trần Minh Tâm",
     faculty: "Công nghệ thông tin",
-    status: "Chưa duyệt",
+    status: "Đã duyệt",
   },
 ];
 
 const TopicCard = ({ topic }) => {
   const navigation = useNavigation();
-
-  // Màu sắc đậm hơn cho tình trạng
-  const statusColor = topic.status === "Chưa duyệt" ? "#D32F2F" : "#388E3C";
-
   return (
-    <View style={styles.card}>
-      <View style={styles.cardTitleContainer}>
-        <Icon
-          name="bar-chart"
-          size={22}
-          color="#64B5F6"
-          style={styles.cardTitleIcon}
-        />
+    <TouchableOpacity
+      style={[
+        styles.card,
+        { borderLeftColor: topic.status === "Đã duyệt" ? "#4CAF50" : "#E53935" },
+      ]}
+      activeOpacity={0.9}
+      onPress={() => navigation.navigate("ChiTietDeTai")}
+    >
+      <View style={styles.cardHeader}>
+        <Ionicons name="book-outline" size={24} color="#64B5F6" />
         <Text style={styles.cardTitle}>{topic.title}</Text>
       </View>
-      <Text style={styles.cardInfo}>Người hướng dẫn: {topic.instructor}</Text>
-      <Text style={styles.cardInfo}>Chủ nhiệm đề tài: {topic.leader}</Text>
-      <Text style={styles.cardInfo}>Khoa: {topic.faculty}</Text>
-      <Text style={[styles.cardInfo, { color: statusColor, fontWeight: "500" }]}>{`Tình trạng: ${topic.status}`}</Text>
-      
-      {/* Các nút "Chi tiết", "Sửa", "Xoá" */}
+      <View style={styles.cardRow}>
+        <Ionicons name="person-outline" size={18} color="#555" />
+        <Text style={styles.cardInfo}>Người hướng dẫn: {topic.instructor}</Text>
+      </View>
+      <View style={styles.cardRow}>
+        <Ionicons name="people-outline" size={18} color="#555" />
+        <Text style={styles.cardInfo}>Chủ nhiệm: {topic.leader}</Text>
+      </View>
+      <View style={styles.cardRow}>
+        <Ionicons name="school-outline" size={18} color="#555" />
+        <Text style={styles.cardInfo}>Khoa: {topic.faculty}</Text>
+      </View>
+      <View style={styles.statusContainer}>
+        {topic.status === "Đã duyệt" ? (
+          <Ionicons name="checkmark-circle" size={22} color="#4CAF50" />
+        ) : (
+          <Ionicons name="close-circle" size={22} color="#E53935" />
+        )}
+        <Text style={styles.statusText}>{topic.status}</Text>
+      </View>
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.detailButton}
-          onPress={() => navigation.navigate("ChiTietDeTai")}
+        <TouchableOpacity style={styles.iconButton}
+        onPress={() => navigation.navigate("SuaDeTai", { topicId: topic.id })}
         >
-          <Text style={styles.detailButtonText}>Duyệt</Text>
+          <Ionicons name="pencil" size={30} color="#66BB6A" />
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={() => navigation.navigate("SuaDeTai", { topicId: topic.id })}
-        >
-          <Text style={styles.buttonText}>Sửa</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={() => {/* Hàm xoá ở đây */}}
-        >
-          <Text style={styles.buttonText}>Xoá</Text>
+        <TouchableOpacity style={styles.iconButton}>
+          <Ionicons name="trash" size={30} color="#FF6B60" />
         </TouchableOpacity>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
-
-
 const QuanLyDeTai = () => {
-  const navigation = useNavigation();
   return (
     <View style={styles.container}>
       <View style={styles.searchContainer}>
-        <Icon name="search" size={19} color="#888" style={styles.searchIcon} />
+        <Icon name="search" size={19} color="#64B5F6" style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Lọc theo người hướng dẫn, chủ nhiệm đề tài,..."
-          placeholderTextColor="#999"
+          placeholder="  Lọc theo người hướng dẫn, chủ nhiệm đề tài,..."
+          placeholderTextColor="#64B5F6"
         />
       </View>
-      <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-      >
-        <Text style={styles.sectionTitle}>Quản lý đề tài</Text>
+      <ScrollView showsVerticalScrollIndicator={false}>
         {allTopics.map((topic, index) => (
           <TopicCard key={index} topic={topic} />
         ))}
@@ -123,109 +119,78 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F2F2F2",
+    paddingHorizontal: 15,
   },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
-    marginHorizontal: 10,
     marginTop: 10,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    elevation: 2,
-  },
-  searchIcon: {
-    marginRight: 8,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    elevation: 3,
+    borderWidth: 2,
+    borderColor: "#64B5F6",
+    marginBottom: 15,
   },
   searchInput: {
     flex: 1,
-    height: 40,
+    height: 42,
+    fontSize: 16,
     color: "#333",
-    fontSize: 15,
-  },
-  scrollView: {
-    flex: 1,
-    marginHorizontal: 15,
-    marginTop: 10,
-  },
-  sectionTitle: {
-    marginVertical: 10,
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#64B5F6",
-    textAlign: "center",
   },
   card: {
     backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 10,
-    elevation: 2,
+    borderRadius: 10,
+    padding: 14,
+    marginBottom: 12,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 4 },
+    borderLeftWidth: 6,
   },
-  cardTitleContainer: {
+  cardHeader: {
     flexDirection: "row",
     alignItems: "center",
-  },
-  cardTitleIcon: {
-    marginRight: 8,
+    marginBottom: 8,
   },
   cardTitle: {
     fontSize: 14,
     fontWeight: "bold",
-    marginBottom: 6,
-    marginRight: 25,
     color: "#64B5F6",
-    paddingHorizontal: 13,
-    textAlign: "justify",
+    marginLeft: 10,
+  },
+  cardRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
   },
   cardInfo: {
     fontSize: 14,
     color: "#333",
-    marginBottom: 2,
-    paddingHorizontal: 30,
+    marginLeft: 6,
+  },
+  statusContainer: {
+    flexDirection: "row",
+    marginTop: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    backgroundColor: "#F2F2F9",
+    alignSelf: "flex-start",
+  },
+  statusText: {
+    fontSize: 15,
+    marginLeft: 6,
   },
   buttonContainer: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "",
     marginTop: 12,
   },
-  detailButton: {
-    // borderColor: "#64B5F6",
-    // borderWidth: 2,
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    height: 35,
-    width: 100,
-    backgroundColor: "#64B5F6",
-  },
-  detailButtonText: {
-    color: "#fff",
-    fontSize: 14,
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-  editButton: {
-    backgroundColor: "#66BB6A",
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    height: 35,
-    width: 100,
-  },
-  deleteButton: {
-    backgroundColor: "#FF6B60",
-    // borderWidth: 2,
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    height: 35,
-    width: 100,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 14,
-    textAlign: "center",
-    fontWeight: "bold",
+  iconButton: {
+    padding: 8,
   },
 });

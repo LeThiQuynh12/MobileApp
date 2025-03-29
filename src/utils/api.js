@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 // const API_BASE_URL = "http://172.20.10.4/api";
-export const API_URL = "http://172.20.10.4:8080/api";
+export const API_URL = "http://192.168.1.6:8080/api";
 // Lưu token
 export const saveTokens = async ({
   access_token,

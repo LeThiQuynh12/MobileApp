@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 import {
   Alert,
@@ -9,10 +9,10 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from "react-native";
+} from 'react-native';
 
-import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 const users = [
   {
@@ -23,7 +23,6 @@ const users = [
     name: "TS. Trần Trung",
     email: "trungt123@gmail.com",
     role: "Giảng viên",
-    power: "DuyetDeTai, XemTienDo, ThongTinCaNhan",
   },
   {
     id: "2",
@@ -33,112 +32,88 @@ const users = [
     name: "Hoàng Thị Thảo",
     email: "hoangthithao@gmail.com",
     role: "Sinh viên",
-    power: "DangKyDeTai, XpemTienDo, ThongTinCaNhan, GiaoNhiemVu",
   },
   {
-    id: "3",
+    id: "233",
     avatar:
       "https://tse1.mm.bing.net/th?id=OIP.qIf5gKDvYwWfNPznR2jxIQAAAA&pid=Api&P=0&h=180",
     code: "HT1508",
-    name: "Khúc Xuân Triển",
-    email: "khuctrient@gmail.com",
+    name: "Hoàng Thị Thảo",
+    email: "hoangthithao@gmail.com",
     role: "Sinh viên",
-    power: "DangKyDeTai, XpemTienDo, ThongTinCaNhan, GiaoNhiemVu",
+  },
+  {
+    id: "23w3",
+    avatar:
+      "https://tse1.mm.bing.net/th?id=OIP.qIf5gKDvYwWfNPznR2jxIQAAAA&pid=Api&P=0&h=180",
+    code: "HT1508",
+    name: "Hoàng Thị Thảo",
+    email: "hoangthithao@gmail.com",
+    role: "Sinh viên",
+  },
+  {
+    id: "332",
+    avatar:
+      "https://tse1.mm.bing.net/th?id=OIP.qIf5gKDvYwWfNPznR2jxIQAAAA&pid=Api&P=0&h=180",
+    code: "HT1508",
+    name: "Hoàng Thị Thảo",
+    email: "hoangthithao@gmail.com",
+    role: "Sinh viên",
   },
 ];
 
 const QuanLyNguoiDung = () => {
   const navigation = useNavigation();
+  
   const handleDelete = (userId) => {
     Alert.alert("Xác nhận xóa", "Bạn có chắc chắn muốn xóa người dùng này?", [
       { text: "Hủy", style: "cancel" },
-      {
-        text: "Xóa",
-        // onPress: () => handleDeleteUser(userId), // Gọi hàm thực hiện xóa
-        style: "destructive",
-      },
+      { text: "Xóa", style: "destructive" },
     ]);
   };
 
   return (
     <View style={styles.container}>
-      {/* Thanh tiêu đề */}
-      {/* <View style={styles.header}>
-        <Ionicons name="menu" size={24} color="white" onPress={() => navigation.openDrawer()} />
-        <Text style={styles.headerTitle}>Quản lý người dùng</Text>
-      </View> */}
-
-      {/* Ô tìm kiếm */}
       <View style={styles.searchContainer}>
-        <Ionicons
-          name="search"
-          size={20}
-          color="#aaa"
-          style={styles.searchIcon}
-        />
-        <TextInput
-          placeholder="Tìm kiếm người dùng"
-          style={styles.searchInput}
+        <Ionicons name="search" size={22} color="#64B5F6" style={styles.searchIcon} />
+        <TextInput 
+          placeholder="Tìm kiếm người dùng"  
+          placeholderTextColor="#9E9E9E" 
+          style={styles.searchInput} 
         />
       </View>
 
-      {/* Danh sách người dùng */}
       <FlatList
-        style={{ flex: 1 }}
         data={users}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.card}>
             <Image source={{ uri: item.avatar }} style={styles.avatar} />
-            <Text style={styles.text}>
-              <Text style={styles.boldText}>Mã:</Text> {item.code}
-            </Text>
-            <Text style={styles.text}>
-              <Text style={styles.boldText}>Họ và tên:</Text> {item.name}
-            </Text>
-            <Text style={styles.text}>
-              <Text style={styles.boldText}>Email:</Text> {item.email}
-            </Text>
-            <Text style={styles.text}>
-              <Text style={styles.boldText}>Vai trò:</Text> {item.role}
-            </Text>
-            <Text style={styles.text}>
-              <Text style={styles.boldText}>Được quyền truy cập:</Text>{" "}
-              {item.power}
-            </Text>
-
-            <View style={styles.buttonContainer}>
-              {/* <TouchableOpacity style={styles.editButton} onPress = {() => navigation.navigate("ThemNguoiDung")}>
-                <Text style={styles.buttonText}>Thêm</Text>
-              </TouchableOpacity> */}
-              <TouchableOpacity
-                style={styles.updateButton}
-                onPress={() =>
-                  navigation.navigate("SuaNguoiDung", { user: item })
-                }
+            <View style={styles.infoContainer}>
+              <Text style={[styles.text, styles.borderBottom]}><Text style={styles.boldText}>Mã:</Text> {item.code}</Text>
+              <Text style={[styles.text, styles.borderBottom]}><Text style={styles.boldText}>Họ và tên:</Text> {item.name}</Text>
+              <Text style={[styles.text, styles.borderBottom]}><Text style={styles.boldText}>Email:</Text> {item.email}</Text>
+              <Text style={styles.text}><Text style={styles.boldText}>Vai trò:</Text> {item.role}</Text>
+            </View>
+            <View style={styles.iconContainer}>
+              <TouchableOpacity 
+                onPress={() => navigation.navigate("SuaNguoiDung", { user: item })} 
+                style={styles.iconButton}
+                activeOpacity={0.6}
               >
-                <Text style={styles.buttonText}>Sửa</Text>
+                <Ionicons name="pencil" size={24} color="#4fff" />
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.deleteButton}
+              <TouchableOpacity 
                 onPress={() => handleDelete(item.id)}
+                style={styles.iconButton}
+                activeOpacity={0.6}
               >
-                <Text style={styles.buttonText}>Xóa</Text>
+                <Ionicons name="trash" size={24} color="#FF5252" />
               </TouchableOpacity>
             </View>
           </View>
         )}
       />
-
-      {/* Thanh điều hướng */}
-      {/* <View style={styles.bottomNav}>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => navigation.navigate("ThemNguoiDung")}
-        >
-          <Ionicons name="add" size={28} color="#fff" />
-        </TouchableOpacity>
-      </View> */}
     </View>
   );
 };
@@ -146,97 +121,65 @@ const QuanLyNguoiDung = () => {
 export default QuanLyNguoiDung;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f5f5f5" },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#64B5F6",
-    padding: 25,
-    paddingTop: 60,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "white",
-    marginLeft: 15,
-  },
+  container: { flex: 1, backgroundColor: "#E3F2FD" },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
-    borderRadius: 8,
+    borderRadius: 30,
     margin: 10,
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    elevation: 5,
+    borderColor: "#64B5F6",
+    borderWidth: 2,
   },
-  searchIcon: { marginRight: 5 },
-  searchInput: { flex: 1, height: 40 },
+  searchIcon: { marginRight: 10 },
+  searchInput: { flex: 1, height: 45, fontSize: 16, color: "#333" },
   card: {
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: "#fff",
     padding: 15,
     marginHorizontal: 10,
     marginVertical: 5,
-    borderRadius: 10,
+    borderRadius: 20,
     shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    gap: 7,
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    elevation: 5,
+    borderColor: "#64B5F6",
+    borderWidth: 2,
   },
   avatar: {
-    width: 50,
-    height: 50,
-    marginBottom: 10,
-    borderRadius: 20,
+    width: 55,
+    height: 55,
+    borderRadius: 30,
+    marginRight: 12,
+    borderWidth: 2,
+    borderColor: "#64B5F6",
   },
-  text: { marginVertical: 2 },
-  boldText: { fontWeight: "bold" },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 10,
-    gap: 40,
+  infoContainer: { flex: 1 },
+  text: { 
+    marginVertical: 5, 
+    paddingBottom: 5, 
+    fontSize: 13,
+    color: "#333",
   },
-  editButton: {
-    backgroundColor: "#66BB6A",
-    padding: 8,
+  boldText: { fontWeight: "bold", color: "#1976D2" },
+  borderBottom: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+  },
+  iconContainer: {
+    flexDirection: "",
+    gap: 15,
+  },
+  iconButton: { 
     borderRadius: 5,
-    width: 100,
-  },
-  updateButton: {
-    backgroundColor: "#66BB6A",
-    padding: 8,
-    borderRadius: 5,
-    width: 100,
-  },
-  deleteButton: {
-    backgroundColor: "#FF6B60",
-    padding: 10,
-    borderRadius: 5,
-    width: 100,
-  },
-
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  bottomNav: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    backgroundColor: "#fff",
-    padding: 15,
-    borderTopWidth: 1,
-    borderColor: "#ccc",
-  },
-  addButton: {
-    backgroundColor: "#64B5F6",
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: -20,
+    backgroundColor: "#1976D2",
+    padding: 2,
   },
 });
