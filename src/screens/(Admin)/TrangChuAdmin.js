@@ -22,8 +22,11 @@ const TrangChuAdmin = () => {
   // Danh sách chức năng quản lý
   const menuItems = [
     { id: "1", title: "Quản lý Người Dùng", icon: "people", screen: "QuanLyNguoiDung" },
-    { id: "2", title: "Danh Sách Giảng Viên", icon: "school", screen: "DSGiangVien" },
-    { id: "3", title: "Danh Sách Sinh Viên", icon: "person", screen: "DSSinhVien" },
+    { id: "2", title: "Quản lý Đề Tài", icon: "book", screen: "QuanLyDeTai" },
+    { id: "3", title: "Quản lý Công Việc", icon: "briefcase", screen: "QuanLyCongViec" },
+    { id: "4", title: "Quản lý Đánh Giá", icon: "star", screen: "QuanLyDanhGia" },
+    { id: "5", title: "Quản lý Tài Liệu", icon: "document", screen: "QuanLyTaiLieu" },
+    { id: "6", title: "Quản lý Thông Báo", icon: "notifications", screen: "QuanLyThongBao" },
   ];
 
   const renderItem = ({ item }) => (
@@ -105,7 +108,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "white",
-    padding: 20,
+    padding: 15,
     marginVertical: 10,
     borderRadius: 15,
     shadowColor: "#000",
@@ -120,7 +123,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   cardText: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: "bold",
     marginLeft: 15,
     color: "#333",

@@ -78,7 +78,7 @@ const QuanLyNguoiDung = () => {
         <Ionicons name="search" size={22} color="#64B5F6" style={styles.searchIcon} />
         <TextInput 
           placeholder="Tìm kiếm người dùng"  
-          placeholderTextColor="#9E9E9E" 
+          placeholderTextColor="#64B5F6" 
           style={styles.searchInput} 
         />
       </View>

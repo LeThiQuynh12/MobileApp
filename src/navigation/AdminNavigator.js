@@ -42,9 +42,13 @@ function AdminHomeScreen() {
           height: 110,
         },
         // eaderTitle: "",
-        headerTitle: "", // Ẩn tiêu đề mặc định
+        headerTitle: "Trang chủ", // Ẩn tiêu đề mặc định
+        headerTitleStyle: {
+          fontSize: 18,
+          color: "#1976D2", // Đổi thành màu đen hoặc bất kỳ màu nào bạn muốn
+        },
         headerLeft: () => (
-          <HeaderLeft title="Trang chủ" navigation={navigation}></HeaderLeft>
+          <HeaderLeft  navigation={navigation}></HeaderLeft>
         ),
       })}
     >
@@ -68,7 +72,13 @@ function UserManagementScreen() {
           height: 110,
         },
         // eaderTitle: "",
-        headerTitle: "Quản lý người dùng", // Ẩn tiêu đề mặc định
+        headerTitle: "Quản lý người dùng", 
+        
+        headerTitleStyle: {
+          fontSize: 18,
+          color: "#1976D2", // Đổi thành màu đen hoặc bất kỳ màu nào bạn muốn
+        },
+        // Ẩn tiêu đề mặc định
         headerLeft: () => (
           <HeaderLeft
             // title="Quản lý người dùng"
@@ -132,11 +142,15 @@ function TopicManagementScreen() {
         headerStyle: {
           height: 110,
         },
-        // eaderTitle: "",
-        headerTitle: "", // Ẩn tiêu đề mặc định
+        HeaderTitle: "Quản lý đề tài",
+        headerTitleStyle: {
+          fontSize: 18,
+          color: "#1976D2", // Đổi thành màu đen hoặc bất kỳ màu nào bạn muốn
+        },
+        // headerTitle: "", // Ẩn tiêu đề mặc định
         headerLeft: () => (
           <HeaderLeft
-            title="Quản lý đề tài"
+            // title="Quản lý đề tài"
             navigation={navigation}
           ></HeaderLeft>
         ),
@@ -192,9 +206,13 @@ function TaskManagementScreen() {
         headerStyle: {
           height: 110,
         },
-        headerTitle: "",
+        headerTitle: "Quản lý công việc",
+        headerTitleStyle: {
+          fontSize: 18,
+          color: "#1976D2", // Đổi thành màu đen hoặc bất kỳ màu nào bạn muốn
+        },
         headerLeft: () => (
-          <HeaderLeft title="Quản lý công việc" navigation={navigation} />
+          <HeaderLeft  navigation={navigation} />
         ),
         // headerRight: () => (
         //   <HeaderPlusIcon navigation={navigation} destination="GiaoNhiemVu" />
