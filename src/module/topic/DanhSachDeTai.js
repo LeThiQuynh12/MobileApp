@@ -77,12 +77,13 @@ const TopicCard = ({ topic }) => {
 
 const DanhSachDeTai = () => {
   const navigation = useNavigation();
-  const [topics, setTopics] = useState([]);
-  const [searchText, setSearchText] = useState("");
 
+  const [searchText, setSearchText] = useState("");
+  const [topics, setTopics] = useState([]);
   useEffect(() => {
     const loadTopics = async () => {
       const data = await fetchGetTopicList();
+      console.log("DS de tai:", data);
       setTopics(data);
     };
     loadTopics();

@@ -1,405 +1,285 @@
-// File ChiTietNhiemVu.js
-import { StyleSheet, Text, TouchableOpacity, View, Image } from "react-native";
-import React, { useState, useEffect } from "react";
-import Icon from "react-native-vector-icons/FontAwesome";
-import { ScrollView, TextInput } from "react-native-gesture-handler";
-import { useRoute } from "@react-navigation/native";
-import { Calendar } from "react-native-calendars";
-import color from "../../utils/color";
-import moment from "moment";
-
+import React, { useState } from "react";
 import {
-  KeyboardAvoidingView,
-  Platform,
-  Keyboard,
-  TouchableWithoutFeedback,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  Alert,
+  ScrollView,
+  ActivityIndicator,
 } from "react-native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-const ChiTietNhiemVu = ({ route }) => {
-  const { task } = route.params; // Lấy dữ liệu được truyền qua
-  console.log("Route Params:", route.params);
+import { useNavigation } from "@react-navigation/native";
+import { postTopicList } from "../../context/fetchData";
+import { Calendar } from "react-native-calendars";
+import Icon from "react-native-vector-icons/FontAwesome";
 
-  const [selectedStatus, setSelectedStatus] = useState(
-    task?.status || "In progress"
-  );
+const DangKyDeTai = () => {
+  const navigation = useNavigation();
+  const [topicData, setTopicData] = useState({
+    tenDeTai: "",
+    giangVienHuongDan: "",
+    chuNhiemDeTai: "",
+    thanhVien: "",
+    moTa: "",
+    khoa: "",
+    linhVucNghienCuu: "",
+    ngayBatDau: new Date(),
+    ngayKetThuc: new Date(),
+    taiLieu: null,
+  });
 
-  const handleStatusChange = (status) => {
-    setSelectedStatus(status);
+  const [showCalendar, setShowCalendar] = useState({
+    ngayBatDau: false,
+    ngayKetThuc: false,
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (name, value) => {
+    setTopicData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  console.log(task);
-  const [title, setTitle] = useState("");
-  const [summary, setSummary] = useState("");
-  const [description, setDescription] = useState("");
+  const formatDate = (date) => {
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
 
-  // Cập nhật state khi task thay đổi
-  useEffect(() => {
-    if (task) {
-      setTitle(task.title || "");
-      setSummary(task.summary || "");
-      setDescription(task.description || "");
+  const handleDayPress = (key, day) => {
+    const selectedDate = new Date(day.timestamp);
+    handleChange(key, selectedDate);
+    setShowCalendar({ ...showCalendar, [key]: false });
+  };
+
+  const handleSubmit = async () => {
+    if (
+      !topicData.tenDeTai ||
+      !topicData.giangVienHuongDan ||
+      !topicData.chuNhiemDeTai
+    ) {
+      Alert.alert("Lỗi", "Vui lòng điền đầy đủ các trường bắt buộc");
+      return;
     }
-  }, [task]);
-
-  // Format the date to dd/MM/yyyy
-  const formatDate = (date) => moment(date).format("DD/MM/YYYY");
-
-  const [newComment, setNewComment] = useState(""); // Nhận xét mới
-  const [comments, setComments] = useState([
-    { name: "Trần Trung", text: "Nhiệm vụ chi tiết, hoàn thành đúng thời hạn" },
-    { name: "Hoàng Thị Thảo", text: "Các bạn thực hiện nhiệm vụ tốt, đầy đủ" },
-    { name: "Lê Thị Quỳnh", text: "Khó thế Thảo ơi" },
-  ]);
-  const handleAddComment = () => {
-    if (newComment.trim() === "") return; // Kiểm tra nếu comment rỗng
-    setComments([...comments, { name: "Người dùng", text: newComment }]);
-    setNewComment(""); // Xóa nội dung nhập sau khi gửi
+    setIsSubmitting(true);
+    try {
+      const response = await postTopicList(topicData);
+      if (response) {
+        Alert.alert("Thành công", "Đăng ký đề tài thành công");
+        navigation.goBack();
+      } else {
+        throw new Error("Đăng ký thất bại");
+      }
+    } catch (error) {
+      Alert.alert("Lỗi", error.message || "Có lỗi xảy ra khi đăng ký đề tài");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-
-  const [startDay, setStartDay] = useState(task?.startDay || "");
-  const [endDay, setEndDay] = useState(task?.endDay || "");
-
-  const handleSelectedStartDay = (day) => {
-    setStartDay(day.dateString); // Cập nhật ngày bắt đầu
-    setShowStartCal(false); // Đóng lịch sau khi chọn
-  };
-
-  const handleSelectedEndDay = (day) => {
-    setEndDay(day.dateString); // Cập nhật ngày kết thúc
-    setShowEndCal(false); // Đóng lịch sau khi chọn
-  };
-
-  const [showStartCal, setShowStartCal] = useState(false);
-  const [showEndCal, setShowEndCal] = useState(false);
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1 }}
-    >
-      <KeyboardAwareScrollView
-        style={styles.container}
-        extraScrollHeight={-100} // Đẩy màn hình lên khi bàn phím xuất hiện
-        enableOnAndroid={true} // Kích hoạt trên Android
-        keyboardShouldPersistTaps="handled" // Đảm bảo có thể bấm ra ngoài để ẩn bàn phím
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View>
-            <View style={styles.containerDetailTask}>
-              <View style={styles.task}>
-                <View style={styles.taskContainer}>
-                  <TextInput
-                    style={styles.textTaskName}
-                    value={title} // Dùng state thay vì task?.title
-                    onChangeText={(text) => setTitle(text)}
-                  />
-
-                  <TextInput
-                    value={summary} // Dùng state thay vì task?.summary
-                    style={styles.textTaskSummary}
-                    onChangeText={(text) => setSummary(text)}
-                  />
-                  <ScrollView style={styles.contentTaskContainer}>
-                    <TextInput
-                      value={description} // Dùng state thay vì task?.description
-                      onChangeText={(text) => setDescription(text)}
-                      multiline={true}
-                      numberOfLines={4}
-                      style={{ textAlignVertical: "top" }}
-                    />
-                  </ScrollView>
-
-                  <View style={styles.date}>
-                    <Text style={{ marginRight: 20 }}>
-                      Ngày bắt đầu: {formatDate(startDay)}{" "}
-                      {/* Format date here */}
-                    </Text>
-
-                    <TouchableOpacity
-                      onPress={() => setShowStartCal(!showStartCal)}
-                    >
-                      <Icon name="calendar" color={color.black} size={20} />
-                    </TouchableOpacity>
-                    {showStartCal && (
-                      <View style={styles.calendarContainer}>
-                        <Calendar
-                          onDayPress={handleSelectedStartDay}
-                          style={styles.calendar}
-                        />
-                      </View>
-                    )}
-                  </View>
-
-                  <View style={styles.date}>
-                    <Text style={{ marginRight: 20 }}>
-                      Ngày đến hạn: {formatDate(endDay)}{" "}
-                      {/* Format date here */}
-                    </Text>
-
-                    <TouchableOpacity
-                      onPress={() => setShowEndCal(!showEndCal)}
-                    >
-                      <Icon name="calendar" color={color.black} size={20} />
-                    </TouchableOpacity>
-                    {showEndCal && (
-                      <View style={styles.calendarContainer}>
-                        <Calendar
-                          onDayPress={handleSelectedEndDay}
-                          style={styles.calendar}
-                        />
-                      </View>
-                    )}
-                  </View>
-
-                  <Text style={{ marginTop: 10 }}>Người thực hiện</Text>
-                  {task?.members?.map((member, index) => (
-                    <View key={index} style={styles.membersContainer}>
-                      <Image source={member.img} style={styles.imgMember} />
-                      <Text>{member.name}</Text>
-                    </View>
-                  ))}
-
-                  <View style={styles.documents}>
-                    <Text style={{ paddingVertical: 10, marginTop: 10 }}>
-                      Tài liệu
-                    </Text>
-                    <TouchableOpacity style={styles.uploadFile}>
-                      <Text style={{ marginTop: 5 }}>Tải tài liệu</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={{ marginTop: 10 }}>Trạng thái</Text>
-
-                  {/* Trạng thái nhiệm vụ */}
-                  <View style={styles.statusContainer}>
-                    {["To do", "In progress", "Done"].map((status) => (
-                      <TouchableOpacity
-                        key={status}
-                        style={[
-                          styles.btnStatus,
-                          selectedStatus === status && styles.btnActive,
-                        ]}
-                        onPress={() => handleStatusChange(status)}
-                      >
-                        <Text
-                          style={{
-                            color:
-                              selectedStatus === status
-                                ? color.white
-                                : color.darkBlue,
-                            fontWeight: "bold",
-                          }}
-                        >
-                          {status}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-              </View>
-            </View>
-            <View style={styles.commentContainer}>
-              <View
-                style={{
-                  borderBottomWidth: 1,
-                  marginBottom: 10,
-                  borderBottomColor: color.darkgray,
-                }}
-              ></View>
-              <Text style={styles.commentTitle}>Nhận xét:</Text>
-              <View style={styles.comment}>
-                {comments.map((comment, index) => (
-                  <View key={index}>
-                    <Text style={styles.commentName}>{comment.name}</Text>
-                    <Text style={styles.description}>{comment.text}</Text>
-                  </View>
-                ))}
-              </View>
-              <View style={styles.addComment}>
-                <TextInput
-                  style={styles.commentInput}
-                  placeholder="Nhập nhận xét..."
-                  value={newComment}
-                  onChangeText={setNewComment}
-                />
-                <TouchableOpacity onPress={handleAddComment}>
-                  <Icon
-                    name="send"
-                    size={20}
-                    color={color.mainColor}
-                    style={{ marginLeft: 10 }}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
+    <ScrollView style={styles.container}>
+      <View style={styles.formContainer}>
+        {[
+          { label: "Tên đề tài", key: "tenDeTai", required: true },
+          {
+            label: "Người hướng dẫn",
+            key: "giangVienHuongDan",
+            required: true,
+          },
+          { label: "Chủ nhiệm đề tài", key: "chuNhiemDeTai", required: true },
+          { label: "Người tham gia", key: "thanhVien", multiline: true },
+          { label: "Mô tả", key: "moTa", multiline: true },
+          { label: "Khoa", key: "khoa" },
+          { label: "Lĩnh vực nghiên cứu", key: "linhVucNghienCuu" },
+        ].map((field) => (
+          <View key={field.key} style={styles.row}>
+            <Text style={styles.label}>
+              {field.label}:{" "}
+              {field.required && <Text style={styles.required}>*</Text>}
+            </Text>
+            <TextInput
+              style={[
+                styles.input,
+                styles.flexInput,
+                field.multiline && styles.multilineInput,
+              ]}
+              value={topicData[field.key]}
+              onChangeText={(text) => handleChange(field.key, text)}
+              placeholder={`Nhập ${field.label.toLowerCase()}`}
+              multiline={field.multiline}
+            />
           </View>
-        </TouchableWithoutFeedback>
-      </KeyboardAwareScrollView>
-    </KeyboardAvoidingView>
+        ))}
+
+        {/* Chọn ngày bắt đầu */}
+        <View style={styles.row}>
+          <Text style={styles.label}>Ngày bắt đầu:</Text>
+          <View style={styles.datePickerContainer}>
+            <TouchableOpacity
+              style={styles.dateInput}
+              onPress={() =>
+                setShowCalendar({ ...showCalendar, ngayBatDau: true })
+              }
+            >
+              <Text style={styles.dateText}>
+                {formatDate(topicData.ngayBatDau)}
+              </Text>
+              <Icon name="calendar" size={20} color="#333" />
+            </TouchableOpacity>
+            {showCalendar.ngayBatDau && (
+              <View style={styles.calendarContainer}>
+                <Calendar
+                  onDayPress={(day) => handleDayPress("ngayBatDau", day)}
+                  style={styles.calendar}
+                  markedDates={{
+                    [formatDate(topicData.ngayBatDau)
+                      .split("/")
+                      .reverse()
+                      .join("-")]: { selected: true },
+                  }}
+                />
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* Chọn ngày kết thúc */}
+        <View style={styles.row}>
+          <Text style={styles.label}>Ngày kết thúc:</Text>
+          <View style={styles.datePickerContainer}>
+            <TouchableOpacity
+              style={styles.dateInput}
+              onPress={() =>
+                setShowCalendar({ ...showCalendar, ngayKetThuc: true })
+              }
+            >
+              <Text style={styles.dateText}>
+                {formatDate(topicData.ngayKetThuc)}
+              </Text>
+              <Icon name="calendar" size={20} color="#333" />
+            </TouchableOpacity>
+            {showCalendar.ngayKetThuc && (
+              <View style={styles.calendarContainer}>
+                <Calendar
+                  onDayPress={(day) => handleDayPress("ngayKetThuc", day)}
+                  style={styles.calendar}
+                  minDate={formatDate(topicData.ngayBatDau)
+                    .split("/")
+                    .reverse()
+                    .join("-")}
+                  markedDates={{
+                    [formatDate(topicData.ngayKetThuc)
+                      .split("/")
+                      .reverse()
+                      .join("-")]: { selected: true },
+                  }}
+                />
+              </View>
+            )}
+          </View>
+        </View>
+      </View>
+      <TouchableOpacity
+        style={[styles.submitButton, isSubmitting && styles.disabledButton]}
+        onPress={handleSubmit}
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.submitButtonText}>Đăng ký</Text>
+        )}
+      </TouchableOpacity>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: color.gray,
-    flex: 1,
+  container: { flex: 1, backgroundColor: "#F2F2F2", padding: 16 },
+  formContainer: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  containerDetailTask: {
-    backgroundColor: color.gray,
-    flex: 1,
+  row: {
+    flexDirection: "row",
     alignItems: "center",
+    marginBottom: 20,
   },
-  taskHeader: {
-    height: 50,
-    width: "100%",
-    backgroundColor: color.white,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  label: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+    width: 150,
   },
-  textTaskHeaderctn: {
-    marginHorizontal: 20,
-  },
-  task: {
-    backgroundColor: color.white,
-    width: "90%",
-    height: 500,
-    marginTop: 20,
-    borderRadius: 20,
-  },
-  taskContainer: {
-    marginHorizontal: 30,
-    marginTop: 20,
-  },
-  textHeaderDetail: {
-    color: color.mainColor,
-    fontWeight: "bold",
-    fontSize: 15,
-  },
-  textHeaderTaskDetail: {
-    fontWeight: "bold",
-    fontSize: 17,
-  },
-  textTaskName: {
-    fontWeight: "bold",
-    fontSize: 15,
-    marginBottom: 5,
-  },
-  textTaskSummary: {
-    fontSize: 15,
-    marginBottom: 10,
-  },
-  contentTaskContainer: {
-    marginTop: 10,
-    height: 100,
-  },
-  date: {
-    flexDirection: "row",
-    marginTop: 10,
-  },
-  membersContainer: {
-    flexDirection: "row",
-    marginTop: 5,
-  },
-  imgMember: {
-    width: 30,
-    height: 30,
-    borderRadius: 50,
-  },
-  documents: {
-    flexDirection: "row",
-  },
-  uploadFile: {
-    backgroundColor: color.mainColor,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 20,
-    marginLeft: 20,
-  },
-  statusContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    backgroundColor: color.white,
-    marginTop: 20,
-    marginRight: 10,
-  },
-  btnStatus: {
-    backgroundColor: color.lightBlue,
-    width: "35%",
-    height: 35,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 20,
-    color: color.darkBlue,
-  },
-  btnActive: {
-    backgroundColor: color.mainColor,
-    width: "35%",
-    height: 35,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 20,
-  },
-  commentContainer: {
-    marginTop: 15,
-    width: "100%",
-    alignSelf: "center",
-    paddingHorizontal: 25,
-  },
-  comment: {
-    marginTop: 10,
-  },
-  description: {
-    marginBottom: 10,
-    borderRadius: 10,
+  input: {
     borderWidth: 1,
-    padding: 8,
-    borderColor: color.darkgray,
-    backgroundColor: color.white,
-  },
-
-  commentTitle: {
-    fontSize: 17,
-    fontWeight: "bold",
-    alignSelf: "center",
-    color: color.darkBlue,
-  },
-  commentName: {
-    color: color.mainColor,
-    fontSize: 15,
-    marginLeft: 5,
-  },
-  commentInput: {
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: "#fff",
+    fontSize: 14,
     flex: 1,
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 8,
-    borderColor: color.darkgray,
-    backgroundColor: color.white,
   },
-  addComment: {
+  multilineInput: {
+    minHeight: 100,
+    textAlignVertical: "top",
+  },
+  datePickerContainer: {
+    flex: 1,
+  },
+  dateInput: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: color.white,
-    borderRadius: 10,
-    padding: 10,
-    marginTop: 10,
-    marginBottom: 50,
+    justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: "#fff",
+  },
+  dateText: {
+    fontSize: 14,
+    color: "#333",
   },
   calendarContainer: {
-    flex: 1,
-    position: "absolute", // Đặt lịch ở vị trí tuyệt đối
-    marginTop: 20,
-    top: "30%", // Điều chỉnh vị trí theo chiều dọc
-    left: "10%", // Điều chỉnh vị trí theo chiều ngang
-    right: "10%", // Điều chỉnh kích thước
-    zIndex: 1, // Đảm bảo lịch hiển thị phía trên các thành phần khác
+    position: "absolute",
+    top: 50,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
-
   calendar: {
-    backgroundColor: color.white, // Màu nền của lịch
-    borderRadius: 10, // Bo góc lịch
+    borderRadius: 10,
+    elevation: 4,
   },
+  submitButton: {
+    backgroundColor: "#2196F3",
+    padding: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    marginBottom: 30,
+  },
+  submitButtonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+  disabledButton: { backgroundColor: "#90CAF9" },
+  required: { color: "red" },
 });
-export default ChiTietNhiemVu;
+
+export default DangKyDeTai;

@@ -48,7 +48,20 @@ const ChiTietDeTai = () => {
     <ScrollView style={styles.container}>
       {/* Topic Card */}
       <View style={styles.card}>
-        <Text style={styles.topicTitle}>{topic.tenDeTai}</Text>
+        <View style={styles.titleContainer}>
+          <Text style={styles.topicTitle}>{topic.tenDeTai}</Text>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("SuaDeTai", {
+                topic: topic,
+                idSinhVien: topic.idSinhVien,
+                idGiangVien: topic.idGiangVien,
+              })
+            }
+          >
+            <Ionicons name="create-outline" size={24} color={color.mainColor} />
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.divider} />
 
@@ -183,6 +196,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     marginBottom: 10,
   },
+  titleContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
   infoLabel: {
     fontSize: 14,
     color: "#6C757D",

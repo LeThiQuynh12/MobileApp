@@ -11,7 +11,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/FontAwesome";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import React, { useState } from "react";
-
+import SuaDeTai from "../module/topic/ChinhSuaDeTai";
 // // Import các màn hình
 // import HomeScreen from "../../src/screens/HomeScreen";
 import XemTienDo from "../../src/screens/XemTienDo";
@@ -212,6 +212,22 @@ function DanhSachDeTaiStack() {
         component={DangKyDeTai}
         options={{
           headerTitle: "Đăng ký đề tài", // Thêm lại tiêu đề\
+          headerStyle: {
+            backgroundColor: color.mainColor, // Màu xanh cho header
+          },
+          headerTitleStyle: {
+            fontSize: 18,
+          },
+          headerTintColor: color.white, // Màu chữ trắng để dễ đọc
+          headerLeft: () => <BackButton />, // Thay menu bằng nút quay lại
+          headerRight: "",
+        }}
+      />
+      <Stack.Screen
+        name="SuaDeTai"
+        component={SuaDeTai}
+        options={{
+          headerTitle: "Chỉnh sửa đề tài", // Thêm lại tiêu đề\
           headerStyle: {
             backgroundColor: color.mainColor, // Màu xanh cho header
           },

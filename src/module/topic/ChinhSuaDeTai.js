@@ -1,25 +1,24 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  ScrollView,
   Alert,
+  ScrollView,
+  ActivityIndicator,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { updateTopic } from "../../context/fetchData";
 import { Calendar } from "react-native-calendars";
+import Icon from "react-native-vector-icons/FontAwesome";
 
 const SuaDeTai = () => {
   const navigation = useNavigation();
   const { params } = useRoute();
   const topicData = params?.topic || {};
-
-  console.log("Đề tài nhận từ chi tiết đề tài:", topicData);
-
+  console.log("đề tài nhận từ chi tiết đề tài:", topicData);
   const [editedTopic, setEditedTopic] = useState({
     tenDeTai: "",
     idGiangVien: "",
@@ -30,11 +29,10 @@ const SuaDeTai = () => {
     ngayBatDau: "",
     ngayKetThuc: "",
   });
-
   const [showCalendar, setShowCalendar] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Initialize data from topicData
+  // Khởi tạo dữ liệu từ topicData
   useEffect(() => {
     if (topicData) {
       setEditedTopic({
@@ -57,11 +55,8 @@ const SuaDeTai = () => {
     }));
   };
 
-  const handleDateChange = (event, selectedDate, key) => {
-    if (event.type === "set") {
-      const formattedDate = selectedDate.toISOString().split("T")[0];
-      handleChange(key, formattedDate);
-    }
+  const handleDayPress = (key, day) => {
+    handleChange(key, day.dateString);
     setShowCalendar(null);
   };
 
@@ -77,10 +72,9 @@ const SuaDeTai = () => {
 
     setIsSubmitting(true);
     try {
-      // Replace with your actual API call
       const response = await updateTopic({
         ...editedTopic,
-        id: topicData.id, // Keep the original ID
+        id: topicData.id, // Giữ nguyên ID
       });
 
       if (response) {
@@ -100,26 +94,19 @@ const SuaDeTai = () => {
     <ScrollView style={styles.container}>
       <View style={styles.formContainer}>
         {[
-          { key: "tenDeTai", label: "Tên đề tài", required: true },
-          { key: "idGiangVien", label: "Giảng viên hướng dẫn", required: true },
-          { key: "idSinhVien", label: "Chủ nhiệm đề tài", required: true },
-          { key: "khoa", label: "Khoa", required: false },
-          {
-            key: "linhVucNghienCuu",
-            label: "Lĩnh vực nghiên cứu",
-            required: false,
-          },
-        ].map(({ key, label, required }) => (
+          { key: "tenDeTai", label: "Tên đề tài" },
+          { key: "idGiangVien", label: "Giảng viên hướng dẫn" },
+          { key: "idSinhVien", label: "Chủ nhiệm đề tài" },
+          { key: "khoa", label: "Khoa" },
+          { key: "linhVucNghienCuu", label: "Lĩnh vực nghiên cứu" },
+        ].map(({ key, label }) => (
           <View key={key} style={styles.row}>
-            <Text style={styles.label}>
-              {label}: {required && <Text style={styles.required}>*</Text>}
-            </Text>
+            <Text style={styles.label}>{label}:</Text>
             <TextInput
               style={styles.input}
               value={editedTopic[key]}
               onChangeText={(text) => handleChange(key, text)}
               placeholder={`Nhập ${label.toLowerCase()}`}
-              editable={!isSubmitting}
             />
           </View>
         ))}
@@ -132,8 +119,6 @@ const SuaDeTai = () => {
             onChangeText={(text) => handleChange("moTa", text)}
             placeholder="Nhập mô tả chi tiết"
             multiline
-            numberOfLines={4}
-            editable={!isSubmitting}
           />
         </View>
 
@@ -145,40 +130,32 @@ const SuaDeTai = () => {
             <TouchableOpacity
               style={styles.dateInput}
               onPress={() => setShowCalendar(key)}
-              disabled={isSubmitting}
             >
               <Text style={styles.dateText}>
                 {editedTopic[key] || "Chọn ngày"}
               </Text>
-              <Ionicons name="calendar" size={20} color="#333" />
+              <Icon name="calendar" size={20} color="#333" />
             </TouchableOpacity>
             {showCalendar === key && (
-              <DateTimePicker
-                value={
-                  editedTopic[key] ? new Date(editedTopic[key]) : new Date()
-                }
-                mode="date"
-                display="default"
-                onChange={(event, date) => handleDateChange(event, date, key)}
-                minimumDate={
-                  key === "ngayKetThuc" && editedTopic.ngayBatDau
-                    ? new Date(editedTopic.ngayBatDau)
-                    : undefined
+              <Calendar
+                onDayPress={(day) => handleDayPress(key, day)}
+                style={styles.calendar}
+                markedDates={{
+                  [editedTopic[key]]: {
+                    selected: true,
+                    selectedColor: "#007bff",
+                  },
+                }}
+                minDate={
+                  key === "ngayKetThuc" ? editedTopic.ngayBatDau : undefined
                 }
               />
             )}
           </View>
         ))}
       </View>
-
-      <TouchableOpacity
-        style={[styles.saveButton, isSubmitting && styles.disabledButton]}
-        onPress={handleSubmit}
-        disabled={isSubmitting}
-      >
-        <Text style={styles.saveButtonText}>
-          {isSubmitting ? "Đang cập nhật..." : "Cập nhật"}
-        </Text>
+      <TouchableOpacity style={styles.saveButton}>
+        <Text style={styles.saveButtonText}>Cập nhật</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -190,15 +167,21 @@ const styles = StyleSheet.create({
     backgroundColor: "#F8F9FA",
     padding: 16,
   },
+
+  saveButton: {
+    backgroundColor: "#007bff",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  saveButtonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+
   formContainer: {
     backgroundColor: "#fff",
     borderRadius: 10,
     padding: 16,
     elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
   },
   row: {
     marginBottom: 20,
@@ -209,16 +192,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     color: "#333",
   },
-  required: {
-    color: "red",
-  },
   input: {
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 8,
     padding: 12,
     fontSize: 14,
-    backgroundColor: "#fff",
   },
   multilineInput: {
     minHeight: 100,
@@ -232,27 +211,15 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     borderRadius: 8,
     padding: 12,
-    backgroundColor: "#fff",
   },
   dateText: {
     fontSize: 14,
     color: "#333",
   },
-  saveButton: {
-    backgroundColor: "#007bff",
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 20,
-    marginBottom: 40,
-  },
-  disabledButton: {
-    backgroundColor: "#cccccc",
-  },
-  saveButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
+  calendar: {
+    marginTop: 10,
+    borderRadius: 10,
+    elevation: 4,
   },
 });
 

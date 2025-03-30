@@ -1,37 +1,34 @@
-import React from 'react';
+import React from "react";
 
-import {
-  Text,
-  TouchableOpacity,
-} from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import { Text, TouchableOpacity } from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome";
 
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from "@expo/vector-icons";
 import {
   createDrawerNavigator,
   DrawerContentScrollView,
   DrawerItemList,
-} from '@react-navigation/drawer';
-import { createStackNavigator } from '@react-navigation/stack';
+} from "@react-navigation/drawer";
+import { createStackNavigator } from "@react-navigation/stack";
 
-import BackButton from '../components/BackButton';
-import HeaderLeft from '../components/HeaderLeft';
-import HeaderPlusIcon from '../components/HeaderRightPlus';
-import GiaoNhiemVu from '../module/task/GiaoNhiemVu';
-import ChiTietDeTai from '../module/topic/ChiTietDeTai';
-import SuaNguoiDung from '../module/user/SuaNguoiDung';
-import ThemDeTai from '../module/user/ThemDeTai';
-import ThemNguoiDung from '../module/user/ThemNguoiDung';
-import QuanLyCongViec from '../screens/(Admin)/QuanLyCongViec';
-import QuanLyDanhGia from '../screens/(Admin)/QuanLyDanhGia';
-import QuanLyDeTai from '../screens/(Admin)/QuanLyDeTai';
-import QuanLyNguoiDung from '../screens/(Admin)/QuanLyNguoiDung';
-import QuanLyTaiLieu from '../screens/(Admin)/QuanLyTaiLieu';
-import SuaCongViec from '../screens/(Admin)/SuaCongViec';
-import SuaDeTai from '../screens/(Admin)/SuaDeTai';
-import ThongBao from '../screens/(Admin)/ThongBao';
-import TrangChuAdmin from '../screens/(Admin)/TrangChuAdmin';
-import color from '../utils/color';
+import BackButton from "../components/BackButton";
+import HeaderLeft from "../components/HeaderLeft";
+import HeaderPlusIcon from "../components/HeaderRightPlus";
+import GiaoNhiemVu from "../module/task/GiaoNhiemVu";
+import ChiTietDeTai from "../module/topic/ChiTietDeTai";
+import SuaNguoiDung from "../module/user/SuaNguoiDung";
+import ThemDeTai from "../module/user/ThemDeTai";
+import ThemNguoiDung from "../module/user/ThemNguoiDung";
+import QuanLyCongViec from "../screens/(Admin)/QuanLyCongViec";
+import QuanLyDanhGia from "../screens/(Admin)/QuanLyDanhGia";
+import QuanLyDeTai from "../screens/(Admin)/QuanLyDeTai";
+import QuanLyNguoiDung from "../screens/(Admin)/QuanLyNguoiDung";
+import QuanLyTaiLieu from "../screens/(Admin)/QuanLyTaiLieu";
+import SuaCongViec from "../screens/(Admin)/SuaCongViec";
+import SuaDeTai from "../screens/(Admin)/SuaDeTai";
+import ThongBao from "../screens/(Admin)/ThongBao";
+import TrangChuAdmin from "../screens/(Admin)/TrangChuAdmin";
+import color from "../utils/color";
 
 // 🏠 Các màn hình quản lý Admin
 function AdminHomeScreen() {
@@ -47,9 +44,7 @@ function AdminHomeScreen() {
           fontSize: 18,
           color: "#1976D2", // Đổi thành màu đen hoặc bất kỳ màu nào bạn muốn
         },
-        headerLeft: () => (
-          <HeaderLeft  navigation={navigation}></HeaderLeft>
-        ),
+        headerLeft: () => <HeaderLeft navigation={navigation}></HeaderLeft>,
       })}
     >
       <Stack.Screen
@@ -72,8 +67,8 @@ function UserManagementScreen() {
           height: 110,
         },
         // eaderTitle: "",
-        headerTitle: "Quản lý người dùng", 
-        
+        headerTitle: "Quản lý người dùng",
+
         headerTitleStyle: {
           fontSize: 18,
           color: "#1976D2", // Đổi thành màu đen hoặc bất kỳ màu nào bạn muốn
@@ -145,15 +140,9 @@ function TopicManagementScreen() {
         HeaderTitle: "Quản lý đề tài",
         headerTitleStyle: {
           fontSize: 18,
-          color: "#1976D2", // Đổi thành màu đen hoặc bất kỳ màu nào bạn muốn
+          color: "#1976D2",
         },
-        // headerTitle: "", // Ẩn tiêu đề mặc định
-        headerLeft: () => (
-          <HeaderLeft
-            // title="Quản lý đề tài"
-            navigation={navigation}
-          ></HeaderLeft>
-        ),
+        headerLeft: () => <HeaderLeft navigation={navigation}></HeaderLeft>,
         headerRight: () => (
           <HeaderPlusIcon navigation={navigation} destination="ThemDeTai" />
         ),
@@ -166,35 +155,52 @@ function TopicManagementScreen() {
           title: "Quản lý đề tài",
         }}
       />
-      <Stack.Screen name="ThemDeTai"
-      component={ThemDeTai}
-      options={{
-        headerShown: false,
-      }}/>
-        <Stack.Screen
-  name="ChiTietDeTai"
-  component={ChiTietDeTai}
-  options={{
-    headerTitle: "Chi tiết Đề tài",
-    headerStyle: {
-      backgroundColor: color.mainColor, // Màu xanh cho header
-    },
-    headerTitleStyle: {
-      fontSize: 18,
-      color: color.white,
-    },
-    headerTintColor: color.white, // Màu chữ trắng để dễ đọc
-    headerLeft: () => <BackButton />, // Thêm nút quay lại
-  }}
-/>
-<Stack.Screen
-  name="SuaDeTai"
-  component={SuaDeTai}
-  options={{
-headerShown: false,
-  }}
-/>
-
+      <Stack.Screen
+        name="ThemDeTai"
+        component={ThemDeTai}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="ChiTietDeTai"
+        component={ChiTietDeTai}
+        options={{
+          headerTitle: "Chi tiết Đề tài",
+          headerStyle: {
+            backgroundColor: color.mainColor,
+          },
+          headerTitleStyle: {
+            fontSize: 18,
+            color: color.white,
+          },
+          headerTintColor: color.white,
+          headerLeft: () => <BackButton />,
+        }}
+      />
+      <Stack.Screen
+        name="SuaDeTai"
+        component={SuaDeTai}
+        options={({ navigation }) => ({
+          headerTitle: "Chỉnh sửa Đề tài",
+          headerStyle: {
+            backgroundColor: color.mainColor,
+          },
+          headerTitleStyle: {
+            fontSize: 18,
+            color: color.white,
+          },
+          headerTintColor: color.white,
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={{ paddingLeft: 15 }}
+            >
+              <Ionicons name="arrow-back" size={24} color="white" />
+            </TouchableOpacity>
+          ),
+        })}
+      />
     </Stack.Navigator>
   );
 }
@@ -211,9 +217,7 @@ function TaskManagementScreen() {
           fontSize: 18,
           color: "#1976D2", // Đổi thành màu đen hoặc bất kỳ màu nào bạn muốn
         },
-        headerLeft: () => (
-          <HeaderLeft  navigation={navigation} />
-        ),
+        headerLeft: () => <HeaderLeft navigation={navigation} />,
         // headerRight: () => (
         //   <HeaderPlusIcon navigation={navigation} destination="GiaoNhiemVu" />
         // ),
@@ -221,62 +225,61 @@ function TaskManagementScreen() {
     >
       {/* Màn hình danh sách công việc */}
       <Stack.Screen
-  name="QuanLyCongViec"
-  component={QuanLyCongViec}
-  options={({ navigation }) => ({
-    headerRight: () => (
-      <HeaderPlusIcon navigation={navigation} destination="GiaoNhiemVu" />
-    ),
-  })}
-/>
+        name="QuanLyCongViec"
+        component={QuanLyCongViec}
+        options={({ navigation }) => ({
+          headerRight: () => (
+            <HeaderPlusIcon navigation={navigation} destination="GiaoNhiemVu" />
+          ),
+        })}
+      />
 
-     <Stack.Screen
-  name="GiaoNhiemVu"
-  component={GiaoNhiemVu}
-  options={({ navigation }) => ({
-    headerTitle: "Giao Nhiệm Vụ",
-    headerStyle: {
-      backgroundColor: color.mainColor, // Màu nền cho header
-    },
-    headerTitleStyle: {
-      fontSize: 18,
-      color: color.white, // Màu chữ trắng
-    },
-    headerTintColor: color.white, // Màu của nút back
-    headerLeft: () => (
-      <TouchableOpacity
-        onPress={() => navigation.goBack()}
-        style={{ paddingLeft: 15 }}
-      >
-        <Ionicons name="arrow-back" size={24} color="white" />
-      </TouchableOpacity>
-    ),
-  })}
-/>
-<Stack.Screen
-  name="SuaCongViec"
-  component={SuaCongViec}
-  options={({ navigation }) => ({
-    headerTitle: "Sửa công việc",
-    headerStyle: {
-      backgroundColor: color.mainColor, // Màu nền cho header
-    },
-    headerTitleStyle: {
-      fontSize: 18,
-      color: color.white, // Màu chữ trắng
-    },
-    headerTintColor: color.white, // Màu của nút back
-    headerLeft: () => (
-      <TouchableOpacity
-        onPress={() => navigation.goBack()}
-        style={{ paddingLeft: 15 }}
-      >
-        <Ionicons name="arrow-back" size={24} color="white" />
-      </TouchableOpacity>
-    ),
-  })}
-/>
-     
+      <Stack.Screen
+        name="GiaoNhiemVu"
+        component={GiaoNhiemVu}
+        options={({ navigation }) => ({
+          headerTitle: "Giao Nhiệm Vụ",
+          headerStyle: {
+            backgroundColor: color.mainColor, // Màu nền cho header
+          },
+          headerTitleStyle: {
+            fontSize: 18,
+            color: color.white, // Màu chữ trắng
+          },
+          headerTintColor: color.white, // Màu của nút back
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={{ paddingLeft: 15 }}
+            >
+              <Ionicons name="arrow-back" size={24} color="white" />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="SuaCongViec"
+        component={SuaCongViec}
+        options={({ navigation }) => ({
+          headerTitle: "Sửa công việc",
+          headerStyle: {
+            backgroundColor: color.mainColor, // Màu nền cho header
+          },
+          headerTitleStyle: {
+            fontSize: 18,
+            color: color.white, // Màu chữ trắng
+          },
+          headerTintColor: color.white, // Màu của nút back
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={{ paddingLeft: 15 }}
+            >
+              <Ionicons name="arrow-back" size={24} color="white" />
+            </TouchableOpacity>
+          ),
+        })}
+      />
     </Stack.Navigator>
   );
 }
@@ -476,8 +479,6 @@ const AdminNavigator = ({ setUserRole }) => {
           ),
         }}
       />
-
-      
     </Drawer.Navigator>
   );
 };

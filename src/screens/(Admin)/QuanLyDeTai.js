@@ -1,5 +1,4 @@
-import React from 'react';
-
+import React, { useState, useEffect } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -7,85 +6,101 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+  Alert,
+} from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { fetchGetTopicList, deleteTopic } from "../../context/fetchData";
 
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-
-const allTopics = [
-  {
-    title: "NGHIÊN CỨU CÁC VẤN ĐỀ BẢO MẬT VÀ THỬ NGHIỆM CÁC TÍNH NĂNG BẢO MẬT",
-    instructor: "TS. Trần Trung",
-    leader: "Hoàng Thị Thảo",
-    faculty: "Công nghệ thông tin",
-    status: "Chưa duyệt",
-  },
-  {
-    title: "PHÁT TRIỂN HỆ THỐNG GỢI Ý SẢN PHẨM DỰA TRÊN AI",
-    instructor: "PGS. TS. Nguyễn Văn An",
-    leader: "Trần Minh Tâm",
-    faculty: "Công nghệ thông tin",
-    status: "Đã duyệt",
-  },
-  {
-    title: "PHÁT TRIỂN HỆ THỐNG GỢI Ý SẢN PHẨM DỰA TRÊN AI",
-    instructor: "PGS. TS. Nguyễn Văn An",
-    leader: "Trần Minh Tâm",
-    faculty: "Công nghệ thông tin",
-    status: "Đã duyệt",
-  },
-  {
-    title: "PHÁT TRIỂN HỆ THỐNG GỢI Ý SẢN PHẨM DỰA TRÊN AI",
-    instructor: "PGS. TS. Nguyễn Văn An",
-    leader: "Trần Minh Tâm",
-    faculty: "Công nghệ thông tin",
-    status: "Đã duyệt",
-  },
-];
-
-const TopicCard = ({ topic }) => {
+const TopicCard = ({ topic, onDeleteSuccess }) => {
   const navigation = useNavigation();
+
+  const formatHocVi = (hocVi) => {
+    if (hocVi === "Tiến sĩ") return "TS.";
+    if (hocVi === "Thạc sĩ") return "ThS.";
+    if (hocVi === "Phó giáo sư, Tiến sĩ") return "PGS.TS.";
+    return hocVi;
+  };
+
+  const handleDeleteTopic = async () => {
+    Alert.alert(
+      "Xác nhận xóa",
+      `Bạn có chắc muốn xóa đề tài "${topic.tenDeTai}"?`,
+      [
+        {
+          text: "Hủy",
+          style: "cancel",
+        },
+        {
+          text: "Xóa",
+          onPress: async () => {
+            try {
+              await deleteTopic(topic.id);
+              Alert.alert("Thành công", "Đã xóa đề tài thành công");
+              onDeleteSuccess();
+            } catch (error) {
+              Alert.alert("Lỗi", "Không thể xóa đề tài: " + error.message);
+            }
+          },
+          style: "destructive",
+        },
+      ]
+    );
+  };
+
   return (
     <TouchableOpacity
       style={[
         styles.card,
-        { borderLeftColor: topic.status === "Đã duyệt" ? "#4CAF50" : "#E53935" },
+        {
+          borderLeftColor:
+            topic.tinhTrang === "Đã duyệt" ? "#4CAF50" : "#E53935",
+        },
       ]}
       activeOpacity={0.9}
-      onPress={() => navigation.navigate("ChiTietDeTai")}
+      onPress={() => navigation.navigate("ChiTietDeTai", { topic })}
     >
       <View style={styles.cardHeader}>
         <Ionicons name="book-outline" size={24} color="#64B5F6" />
-        <Text style={styles.cardTitle}>{topic.title}</Text>
+        <Text style={styles.cardTitle}>{topic.tenDeTai}</Text>
       </View>
+
       <View style={styles.cardRow}>
         <Ionicons name="person-outline" size={18} color="#555" />
-        <Text style={styles.cardInfo}>Người hướng dẫn: {topic.instructor}</Text>
+        <Text style={styles.cardInfo}>
+          Người hướng dẫn: {formatHocVi(topic.hocVi)} {topic.tenGiangVien}
+        </Text>
       </View>
+
       <View style={styles.cardRow}>
         <Ionicons name="people-outline" size={18} color="#555" />
-        <Text style={styles.cardInfo}>Chủ nhiệm: {topic.leader}</Text>
+        <Text style={styles.cardInfo}>Chủ nhiệm: {topic.tenSinhVien}</Text>
       </View>
+
       <View style={styles.cardRow}>
         <Ionicons name="school-outline" size={18} color="#555" />
-        <Text style={styles.cardInfo}>Khoa: {topic.faculty}</Text>
+        <Text style={styles.cardInfo}>Khoa: {topic.khoa}</Text>
       </View>
+
       <View style={styles.statusContainer}>
-        {topic.status === "Đã duyệt" ? (
+        {topic.tinhTrang === "Đã duyệt" ? (
           <Ionicons name="checkmark-circle" size={22} color="#4CAF50" />
         ) : (
           <Ionicons name="close-circle" size={22} color="#E53935" />
         )}
-        <Text style={styles.statusText}>{topic.status}</Text>
+        <Text style={styles.statusText}>{topic.tinhTrang}</Text>
       </View>
+
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.iconButton}
-        onPress={() => navigation.navigate("SuaDeTai", { topicId: topic.id })}
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => navigation.navigate("SuaDeTai", { topic })}
         >
           <Ionicons name="pencil" size={30} color="#66BB6A" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton}>
+
+        <TouchableOpacity style={styles.iconButton} onPress={handleDeleteTopic}>
           <Ionicons name="trash" size={30} color="#FF6B60" />
         </TouchableOpacity>
       </View>
@@ -94,19 +109,51 @@ const TopicCard = ({ topic }) => {
 };
 
 const QuanLyDeTai = () => {
+  const [searchText, setSearchText] = useState("");
+  const [topics, setTopics] = useState([]);
+
+  const loadTopics = async () => {
+    try {
+      const data = await fetchGetTopicList();
+      console.log("DS de tai:", data);
+      setTopics(data);
+    } catch (error) {
+      Alert.alert("Lỗi", "Không thể tải danh sách đề tài: " + error.message);
+    }
+  };
+
+  useEffect(() => {
+    loadTopics();
+  }, []);
+
+  const filteredTopics = topics.filter(
+    (topic) =>
+      topic.tenDeTai.toLowerCase().includes(searchText.toLowerCase()) ||
+      topic.khoa.toLowerCase().includes(searchText.toLowerCase()) ||
+      topic.linhVucNghienCuu.toLowerCase().includes(searchText.toLowerCase()) ||
+      topic.idSinhVien.toLowerCase().includes(searchText.toLowerCase())
+  );
+
   return (
     <View style={styles.container}>
       <View style={styles.searchContainer}>
-        <Icon name="search" size={19} color="#64B5F6" style={styles.searchIcon} />
+        <Icon
+          name="search"
+          size={19}
+          color="#64B5F6"
+          style={styles.searchIcon}
+        />
         <TextInput
           style={styles.searchInput}
           placeholder="  Lọc theo người hướng dẫn, chủ nhiệm đề tài,..."
           placeholderTextColor="#64B5F6"
+          value={searchText}
+          onChangeText={setSearchText}
         />
       </View>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {allTopics.map((topic, index) => (
-          <TopicCard key={index} topic={topic} />
+        {filteredTopics.map((topic, index) => (
+          <TopicCard key={index} topic={topic} onDeleteSuccess={loadTopics} />
         ))}
       </ScrollView>
     </View>
@@ -187,7 +234,6 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: "row",
-    justifyContent: "",
     marginTop: 12,
   },
   iconButton: {
