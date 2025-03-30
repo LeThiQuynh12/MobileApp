@@ -1,12 +1,10 @@
-import axios from 'axios';
+import axios from "axios";
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // export const API_URL = "http://10.0.2.2:8080/api";
 
-
-// const API_BASE_URL = "http://172.20.10.4/api";
-export const API_URL = "http://192.168.1.6:8080/api";
+export const API_URL = "http://192.168.0.103:8080/api";
 // Lưu token
 export const saveTokens = async ({
   access_token,
@@ -15,6 +13,7 @@ export const saveTokens = async ({
   refresh_expires_in = 1000,
 }) => {
   try {
+    console.log("token: ", access_token, refresh_token);
     const access_expires_at = Date.now() + access_expires_in * 1000; // Tính thời gian hết hạn (millisecond)
     const refresh_expires_at = Date.now() + refresh_expires_in * 1000; // Tính thời gian hết hạn (millisecond)
     const tokens = JSON.stringify({
@@ -25,7 +24,7 @@ export const saveTokens = async ({
     });
     // console.log(access_token, refresh_token);
     await AsyncStorage.setItem("authTokens", tokens);
-    console.log("save token success");
+    // console.log("save token success");
     // const tokens1 = await getTokens(); // Lấy access token từ AsyncStorage
     // console.log("tokens.access_token:", tokens1);
   } catch (error) {

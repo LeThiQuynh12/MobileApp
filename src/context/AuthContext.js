@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import api, { getTokens } from "../utils/api";
+import api, { getTokens, saveTokens } from "../utils/api";
 import { useNavigation } from "@react-navigation/native";
 
 export const AuthContext = createContext();
@@ -12,6 +12,7 @@ export const AuthProvider = ({ children }) => {
   // 📌 Lấy user từ AsyncStorage
   const loadUserFromStorage = async () => {
     const userData = await AsyncStorage.getItem("user");
+    console.log("userData: ", userData);
     if (userData) {
       setUser(JSON.parse(userData));
     }
@@ -50,10 +51,12 @@ export const AuthProvider = ({ children }) => {
 
   // 📌 Hàm đăng nhập
   const login = async (username, password) => {
+    // console.log(username, password);
     try {
       const response = await api.post("/auth/login", { username, password });
-      if (response.data.access_token) {
-        await saveTokens(response.data); // Lưu token
+      // console.log("response: ", response.data.results);
+      if (response.data.results.access_token) {
+        await saveTokens(response.data.results); // Lưu token
         await getCurrentUser(true); // Lấy user từ server
         return true;
       }
