@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   ScrollView,
@@ -8,7 +8,9 @@ import {
   View,
 } from "react-native";
 import color from "../../utils/color";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
+import api from "../../utils/api";
+
 const data = {
   topicName:
     "NGHIÊN CỨU CÁC VẤN ĐỀ BẢO MẬT VÀ THỬ NGHIỆM CÁC TÍNH NĂNG BẢO MẬT KHI PHÁT TRIỂN MOBILE APP DỰA TRÊN NỀN TẢNG NATIVE REACT VÀ KOTLIN.",
@@ -21,133 +23,49 @@ const data = {
   member: 5,
 };
 
-const tasksct = [
-  {
-    title: "Nhiệm vụ 1",
-    summary: "Xây dựng giao diện quản lý sinh viên",
-    description:
-      "Thiết kế màn hình đăng nhập, chi tiết đề tài, danh sách đề tài",
-    startDay: "20-12-2025",
-    endDay: "20-12-2025",
-    members: [
-      {
-        img: require("../../../src/data/imgs/Quynh.png"),
-        name: "Quỳnh",
-      },
-      { img: require("../../../src/data/imgs/Trien.png"), name: "Triển" },
-    ],
-    status: "To do",
-  },
-  {
-    title: "Nhiệm vụ 2",
-    summary: "Xây dựng giao diện quản lý sinh viên",
-    description:
-      "Thiết kế màn hình đăng nhập, chi tiết đề tài, danh sách đề tài",
-    startDay: "20-12-2025",
-    endDay: "20-12-2025",
-    members: [
-      { img: require("../../../src/data/imgs/Viet.png"), name: "Việt" },
-      { img: require("../../../src/data/imgs/Trien.png"), name: "Triển" },
-    ],
-    status: "In progress",
-  },
-  {
-    title: "Nhiệm vụ 3",
-    summary: "Xây dựng giao diện quản lý giảng viên",
-    description:
-      "Thiết kế màn hình đăng nhập, trang chủ, thông tin cá nhân, chi tiết đề tài, danh sách đề tài",
-    startDay: "20-12-2025",
-    endDay: "20-12-2025",
-    members: [
-      { img: require("../../../src/data/imgs/Quynh.png"), name: "Quỳnh" },
-      { img: require("../../../src/data/imgs/Viet.png"), name: "Việt" },
-    ],
-    status: "To do",
-  },
-  {
-    title: "Nhiệm vụ 3",
-    summary: "Xây dựng giao diện quản lý giảng viên",
-    description:
-      "Thiết kế màn hình đăng nhập, trang chủ, thông tin cá nhân, chi tiết đề tài, danh sách đề tài",
-    startDay: "20-12-2025",
-    endDay: "20-12-2025",
-    members: [
-      { img: require("../../../src/data/imgs/Quynh.png"), name: "Quỳnh" },
-      { img: require("../../../src/data/imgs/Viet.png"), name: "Việt" },
-    ],
-    status: "To do",
-  },
-  {
-    title: "Nhiệm vụ 3",
-    summary: "Xây dựng giao diện quản lý giảng viên",
-    description:
-      "Thiết kế màn hình đăng nhập, trang chủ, thông tin cá nhân, chi tiết đề tài, danh sách đề tài",
-    startDay: "20-12-2025",
-    endDay: "20-12-2025",
-    members: [
-      { img: require("../../../src/data/imgs/Quynh.png"), name: "Quỳnh" },
-      { img: require("../../../src/data/imgs/Viet.png"), name: "Việt" },
-    ],
-    status: "Done",
-  },
-];
-// const tasks = [
-//   {
-//     id: 1,
-//     name: "Nhiệm vụ 1",
-//   },
-//   {
-//     id: 2,
-//     name: "Nhiệm vụ 2",
-//   },
-//   {
-//     id: 3,
-//     name: "Nhiệm vụ 3",
-//   },
-//   {
-//     id: 4,
-//     name: "Nhiệm vụ 4",
-//   },
-// ];
-
-const mockTask = {
-  title: "Thiết kế UI",
-  summary: "Thiết kế giao diện màn hình chính",
-  description: "Cần hoàn thành wireframe và prototype trước thứ 6",
-  startDay: "2025-02-26",
-  endDay: "2025-03-05",
-  members: [{ name: "Nguyễn Văn A" }, { name: "Trần Thị B" }],
-};
-
 const ChiTietDeTai = () => {
   const navigation = useNavigation();
-  // <Button title="Quay lại" onPress={() => navigation.goBack()} />
-  const handleShowAllTask = () => {
-    navigation.navigate("DanhSachNhiemVu", { tasksct });
-  };
+  const [tasksct, setTasksct] = useState([]); // ✅ Luôn đảm bảo là mảng
+
+  // Lấy danh sách nhiệm vụ từ API
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const response = await api.get("/tasks");
+        console.log("API response:", response.data);
+        setTasksct(Array.isArray(response.data) ? response.data : []);
+      } catch (error) {
+        console.error("Lỗi khi lấy tasks:", error);
+        setTasksct([]); // ✅ Tránh undefined khi API lỗi
+      }
+    };
+    fetchTasks();
+  }, []);
+
+  // Đếm số nhiệm vụ theo trạng thái
   const getTaskCountByStatus = (status) => {
+    if (!Array.isArray(tasksct)) return 0; // ✅ Tránh lỗi undefined
     return tasksct.filter((task) => task.status === status).length;
+  };
+
+  // Tránh chia 0 khi tính phần trăm
+  const getTaskPercentage = (status) => {
+    const total = tasksct.length;
+    return total > 0 ? `${(getTaskCountByStatus(status) / total) * 100}%` : "0%";
   };
 
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.topicName}>{data.topicName}</Text>
-      <View
-        style={{
-          padding: 0.5,
-          marginHorizontal: 16,
-          backgroundColor: "#DFD0D0",
-        }}
-      ></View>
+      <View style={styles.divider} />
+
       <View style={styles.wrapper}>
         <Text style={styles.title}>Chi tiết:</Text>
         <Text style={styles.textitem}>
-          <Text style={styles.textTitle}>Chủ nhiệm đề tài:</Text>{" "}
-          {data.projectManager}
+          <Text style={styles.textTitle}>Chủ nhiệm đề tài:</Text> {data.projectManager}
         </Text>
         <Text style={styles.textitem}>
-          <Text style={styles.textTitle}>Người hướng dẫn:</Text>{" "}
-          {data.lecturerGuide}
+          <Text style={styles.textTitle}>Người hướng dẫn:</Text> {data.lecturerGuide}
         </Text>
         <Text style={styles.textitem}>
           <Text style={styles.textTitle}>Khoa:</Text> {data.department}
@@ -156,225 +74,90 @@ const ChiTietDeTai = () => {
           <Text style={styles.textTitle}>Trạng thái:</Text> {data.status}
         </Text>
         <Text style={styles.textitem}>
-          <Text style={styles.textTitle}>Thời gian thực hiện</Text> {data.time}
+          <Text style={styles.textTitle}>Thời gian thực hiện:</Text> {data.time}
         </Text>
         <Text style={styles.textitem}>
-          <Text style={styles.textTitle}>Lĩnh vực</Text> {data.field}
+          <Text style={styles.textTitle}>Lĩnh vực:</Text> {data.field}
         </Text>
         <Text style={styles.textitem}>
-          <Text style={styles.textTitle}>Số lượng người tham gia:</Text>{" "}
-          {data.member}
+          <Text style={styles.textTitle}>Số lượng người tham gia:</Text> {data.member}
         </Text>
       </View>
-      <View
-        style={{
-          padding: 0.5,
-          marginHorizontal: 16,
-          backgroundColor: color.separate,
-        }}
-      ></View>
-      <View style={styles.wrapper}>
-        <Text style={styles.title}>Tài liệu liên quan: </Text>
-      </View>
-      <View
-        style={{
-          padding: 0.5,
-          marginHorizontal: 16,
-          backgroundColor: color.separate,
-        }}
-      ></View>
+
+      <View style={styles.divider} />
+
       <View style={styles.wrapper}>
         <View style={styles.taskContainer}>
           <Text style={styles.title}>Nhiệm vụ cần làm:</Text>
           <TouchableOpacity
-            onPress={handleShowAllTask}
-            style={{
-              backgroundColor: color.mainColor,
-              paddingHorizontal: 12,
-              borderRadius: 100,
-              overflow: "hidden",
-              marginRight: 10,
-              height: 27,
-              justifyContent: "center",
-            }}
+            onPress={() => navigation.navigate("DanhSachNhiemVu", { tasksct })}
+            style={styles.viewAllButton}
           >
             <Text style={{ color: color.white }}>Xem tất cả</Text>
           </TouchableOpacity>
         </View>
-        <View style={styles.taskStatusContainer}>
-          <View
-            style={[
-              styles.statusBox,
-              {
-                backgroundColor: "red",
 
-                width: `${
-                  (getTaskCountByStatus("To do") / tasksct.length) * 100
-                }%`,
-              },
-            ]}
-          />
-          <View
-            style={[
-              styles.statusBox,
-              {
-                backgroundColor: "yellow",
-                width: `${
-                  (getTaskCountByStatus("In progress") / tasksct.length) * 100
-                }%`,
-              },
-            ]}
-          />
-          <View
-            style={[
-              styles.statusBox,
-              {
-                backgroundColor: "green",
-                width: `${
-                  (getTaskCountByStatus("Done") / tasksct.length) * 100
-                }%`,
-              },
-            ]}
-          />
+        {/* Thanh trạng thái nhiệm vụ */}
+        <View style={styles.taskStatusContainer}>
+          <View style={[styles.statusBox, { backgroundColor: "red", width: getTaskPercentage("To do") }]} />
+          <View style={[styles.statusBox, { backgroundColor: "yellow", width: getTaskPercentage("In progress") }]} />
+          <View style={[styles.statusBox, { backgroundColor: "green", width: getTaskPercentage("Done") }]} />
         </View>
+
+        {/* Chú thích trạng thái */}
         <View style={styles.decriptionTask}>
           <View style={styles.decriptionItem}>
-            <View
-              style={[styles.decriptionColor, { backgroundColor: "red" }]}
-            ></View>
-            <Text style={{}}>To do</Text>
+            <View style={[styles.decriptionColor, { backgroundColor: "red" }]} />
+            <Text>To do</Text>
           </View>
           <View style={styles.decriptionItem}>
-            <View
-              style={[styles.decriptionColor, { backgroundColor: "yellow" }]}
-            ></View>
-            <Text style={{}}>In progress</Text>
+            <View style={[styles.decriptionColor, { backgroundColor: "yellow" }]} />
+            <Text>In progress</Text>
           </View>
           <View style={styles.decriptionItem}>
-            <View
-              style={[styles.decriptionColor, { backgroundColor: "green" }]}
-            ></View>
-            <Text style={{}}>Done</Text>
+            <View style={[styles.decriptionColor, { backgroundColor: "green" }]} />
+            <Text>Done</Text>
           </View>
         </View>
       </View>
+
+      {/* Nút duyệt / từ chối đề tài */}
       <View style={styles.buttonWrapper}>
         <TouchableOpacity style={styles.buttonContainer}>
           <Text style={styles.buttonText}>Duyệt đề tài</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.buttonContainer, { backgroundColor: "#FF3D00" }]}
-        >
-          <Text style={[styles.buttonText]}>Từ chối</Text>
+        <TouchableOpacity style={[styles.buttonContainer, { backgroundColor: "#FF3D00" }]}>
+          <Text style={styles.buttonText}>Từ chối</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
   );
 };
+
 const styles = StyleSheet.create({
-  container: {
-    padding: 16,
+  container: { padding: 16 },
+  topicName: { color: color.mainColor, fontSize: 16, fontWeight: "700", textAlign: "center", marginBottom: 8 },
+  divider: { height: 1, backgroundColor: "#DFD0D0", marginHorizontal: 16 },
+  wrapper: { marginVertical: 12 },
+  title: { fontSize: 15, color: color.mainColor, fontWeight: "500", paddingBottom: 8 },
+  textitem: { fontSize: 15, marginHorizontal: 8, lineHeight: 28 },
+  textTitle: { fontWeight: "700" },
+  taskContainer: { flexDirection: "row", justifyContent: "space-between", marginBottom: 16 },
+  viewAllButton: {
+    backgroundColor: color.mainColor,
+    paddingHorizontal: 12,
+    borderRadius: 100,
+    height: 27,
+    justifyContent: "center",
   },
-  topicName: {
-    color: color.mainColor,
-    fontSize: 16,
-    fontWeight: "700",
-    textAlign: "center",
-    marginBottom: 8,
-    lineHeight: 20,
-  },
-  wrapper: {
-    marginVertical: 12,
-  },
-  taskContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 16,
-    // marginHorizontal: 8,
-    fontSize: 15,
-  },
-  title: {
-    fontSize: 15,
-    color: color.mainColor,
-    paddingBottom: 8,
-    fontWeight: "500",
-  },
-  textitem: {
-    fontSize: 15,
-    marginHorizontal: 8,
-    lineHeight: 28,
-  },
-  textTitle: {
-    fontWeight: "700",
-  },
-  taskItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 16,
-    marginHorizontal: 8,
-    fontSize: 15,
-  },
-  buttonWrapper: {
-    flexDirection: "row",
-    gap: 20,
-    marginBottom: 40,
-  },
-  buttonContainer: {
-    opacity: 0.8,
-    backgroundColor: color.darkBlue,
-    paddingVertical: 12,
-    borderRadius: 16,
-    alignItems: "center",
-    marginTop: 20,
-    flex: 1,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
-    flex: 1,
-  },
-  taskStatusContainer: {
-    borderRadius: 10,
-    flexDirection: "row",
-    height: 12,
-    marginRight: 10,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 1, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 2,
-    elevation: 2, // Dành cho Android
-  },
-  statusBox: {
-    height: "100%",
-  },
-  decriptionTask: {
-    // height: 20,
-    padding: 20,
-    // backgroundColor: "#ccc",
-    flexDirection: "row",
-    flexWrap: "wrap",
-  },
-  decriptionItem: {
-    flexDirection: "row",
-    width: "45%",
-    marginRight: 8,
-    marginBottom: 8,
-    alignItems: "center",
-  },
-  decriptionColor: {
-    width: 16,
-    height: 16,
-    backgroundColor: "red",
-    marginRight: 4,
-    borderRadius: 6,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.6,
-    shadowRadius: 1.5,
-    elevation: 4, // Dành cho Android
-  },
+  taskStatusContainer: { borderRadius: 10, flexDirection: "row", height: 12, overflow: "hidden", elevation: 2 },
+  statusBox: { height: "100%" },
+  decriptionTask: { flexDirection: "row", flexWrap: "wrap", padding: 20 },
+  decriptionItem: { flexDirection: "row", width: "45%", marginRight: 8, alignItems: "center" },
+  decriptionColor: { width: 16, height: 16, borderRadius: 6, marginRight: 4, elevation: 4 },
+  buttonWrapper: { flexDirection: "row", gap: 20, marginBottom: 40 },
+  buttonContainer: { backgroundColor: color.darkBlue, paddingVertical: 12, borderRadius: 16, alignItems: "center", flex: 1 },
+  buttonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
 });
 
 export default ChiTietDeTai;

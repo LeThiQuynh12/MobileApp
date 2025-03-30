@@ -1,17 +1,63 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  FlatList,
   TouchableOpacity,
   StyleSheet,
+  ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import color from "../utils/color";
+import api from "../utils/api";
 
 const NotificationScreen = () => {
-  const [filter, setFilter] = useState("Gần đây");
+  const [filter, setFilter] = useState("Gần đây"); // Bộ lọc
   const [showFilterOptions, setShowFilterOptions] = useState(false);
   const [expandedNotification, setExpandedNotification] = useState(null);
+  const [allNotifications, setAllNotifications] = useState([]); // Dữ liệu gốc
+  const [filteredNotifications, setFilteredNotifications] = useState([]); // Dữ liệu sau lọc
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // 🛠 GET danh sách thông báo từ API
+  const fetchNotifications = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get("/notifications");
+
+      console.log("API Response:", response.data);
+
+      if (response.data && Array.isArray(response.data.results)) {
+        setAllNotifications(response.data.results);
+        setFilteredNotifications(response.data.results); // Mặc định hiển thị tất cả
+      } else {
+        throw new Error("Dữ liệu API không hợp lệ");
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+      setError("Không thể tải thông báo, vui lòng thử lại!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  // 📌 Bộ lọc thông báo dựa trên trạng thái
+  const filterNotifications = (option) => {
+    setFilter(option);
+    setShowFilterOptions(false);
+
+    if (option === "Chưa đọc") {
+      setFilteredNotifications(allNotifications.filter((n) => n.trangThai === "Chưa đọc"));
+    } else if (option === "Đã đọc") {
+      setFilteredNotifications(allNotifications.filter((n) => n.trangThai === "Đã đọc"));
+    } else {
+      setFilteredNotifications(allNotifications); // Hiển thị tất cả
+    }
+  };
 
   const toggleNotification = (id) => {
     setExpandedNotification(expandedNotification === id ? null : id);
@@ -19,8 +65,6 @@ const NotificationScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* <Text style={styles.title}>Thông báo</Text> */}
-
       {/* Dropdown sắp xếp thông báo */}
       <TouchableOpacity
         style={styles.sortButton}
@@ -35,10 +79,7 @@ const NotificationScreen = () => {
             <TouchableOpacity
               key={option}
               style={styles.dropdownItem}
-              onPress={() => {
-                setFilter(option);
-                setShowFilterOptions(false);
-              }}
+              onPress={() => filterNotifications(option)}
             >
               <Text style={styles.dropdownText}>{option}</Text>
             </TouchableOpacity>
@@ -46,35 +87,47 @@ const NotificationScreen = () => {
         </View>
       )}
 
-      {/* Thông báo 1 - Chưa đọc */}
-      <TouchableOpacity
-        style={[styles.notificationItem, styles.unread]}
-        onPress={() => toggleNotification(1)}
-      >
-        <Text style={styles.titleText}>Tiêu đề</Text>
-        <Text style={styles.contentText}>Nội dung thông báo</Text>
-        <Text style={styles.statusText}>Chưa đọc</Text>
-        {expandedNotification === 1 && (
-          <View style={[styles.detail, styles.unread]}>
-            <Text style={styles.detailText}>Chi tiết thông báo 1...</Text>
-          </View>
-        )}
-      </TouchableOpacity>
+      {/* Hiển thị lỗi nếu có */}
+      {error && <Text style={styles.errorText}>{error}</Text>}
 
-      {/* Thông báo 2 - Đã đọc */}
-      <TouchableOpacity
-        style={[styles.notificationItem, styles.read]}
-        onPress={() => toggleNotification(2)}
-      >
-        <Text style={styles.titleText}>Tiêu đề</Text>
-        <Text style={styles.contentText}>Nội dung thông báo</Text>
-        <Text style={styles.statusText}>Đã đọc</Text>
-        {expandedNotification === 2 && (
-          <View style={[styles.detail, styles.read]}>
-            <Text style={styles.detailText}>Chi tiết thông báo 2...</Text>
-          </View>
-        )}
-      </TouchableOpacity>
+      {/* Hiển thị loading nếu dữ liệu chưa load xong */}
+      {loading ? (
+        <ActivityIndicator size="large" color={color.darkBlue} />
+      ) : (
+        <ScrollView>
+          {filteredNotifications.length > 0 ? (
+            filteredNotifications.map((notification) => (
+              <TouchableOpacity
+                key={notification.id}
+                style={[
+                  styles.notificationItem,
+                  notification.trangThai === "Chưa đọc" ? styles.unread : styles.read,
+                ]}
+                onPress={() => toggleNotification(notification.id)}
+              >
+                <Text style={styles.titleText}>{notification.tieuDe}</Text>
+                <Text style={styles.contentText}>{notification.moTa}</Text>
+                <Text style={styles.statusText}>{notification.trangThai}</Text>
+
+                {expandedNotification === notification.id && (
+                  <View
+                    style={[
+                      styles.detail,
+                      notification.trangThai === "Chưa đọc" ? styles.unread : styles.read,
+                    ]}
+                  >
+                    <Text style={styles.detailText}>
+                      Thời gian: {notification.thoiGian}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            ))
+          ) : (
+            <Text style={styles.noDataText}>Không có thông báo nào</Text>
+          )}
+        </ScrollView>
+      )}
     </View>
   );
 };
@@ -84,13 +137,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: color.background,
     padding: 20,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: color.darkBlue,
-    textAlign: "center",
-    marginBottom: 20,
   },
   sortButton: {
     alignSelf: "flex-end",
@@ -155,6 +201,16 @@ const styles = StyleSheet.create({
   },
   detailText: {
     color: color.textColor,
+  },
+  noDataText: {
+    textAlign: "center",
+    color: color.textColor,
+    marginTop: 20,
+  },
+  errorText: {
+    color: "red",
+    textAlign: "center",
+    marginBottom: 10,
   },
 });
 

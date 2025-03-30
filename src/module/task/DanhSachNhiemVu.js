@@ -13,51 +13,8 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import color from "../../utils/color";
 import ChiTietNhiemVu from "./ChiTietNhiemVu";
 import { Ionicons } from "@expo/vector-icons";
+import api from "../../utils/api";
 
-// const tasks = [
-//   {
-//     title: "Nhiệm vụ 1",
-//     summary: "Xây dựng giao diện quản lý sinh viên",
-//     description:
-//       "Thiết kế màn hình đăng nhập, chi tiết đề tài, danh sách đề tài",
-//     startDay: "20-12-2025",
-//     endDay: "20-12-2025",
-//     members: [
-//       {
-//         img: require("../../../src/data/imgs/Quynh.png"),
-//         name: "Quỳnh",
-//       },
-//       { img: require("../../../src/data/imgs/Trien.png"), name: "Triển" },
-//     ],
-//     status: "To do",
-//   },
-//   {
-//     title: "Nhiệm vụ 2",
-//     summary: "Xây dựng giao diện quản lý sinh viên",
-//     description:
-//       "Thiết kế màn hình đăng nhập, chi tiết đề tài, danh sách đề tài",
-//     startDay: "20-12-2025",
-//     endDay: "20-12-2025",
-//     members: [
-//       { img: require("../../../src/data/imgs/Viet.png"), name: "Việt" },
-//       { img: require("../../../src/data/imgs/Trien.png"), name: "Triển" },
-//     ],
-//     status: "In progress",
-//   },
-//   {
-//     title: "Nhiệm vụ 3",
-//     summary: "Xây dựng giao diện quản lý giảng viên",
-//     description:
-//       "Thiết kế màn hình đăng nhập, trang chủ, thông tin cá nhân, chi tiết đề tài, danh sách đề tài",
-//     startDay: "20-12-2025",
-//     endDay: "20-12-2025",
-//     members: [
-//       { img: require("../../../src/data/imgs/Quynh.png"), name: "Quỳnh" },
-//       { img: require("../../../src/data/imgs/Viet.png"), name: "Việt" },
-//     ],
-//     status: "To do",
-//   },
-// ];
 export default function DanhSachNhiemVu({ route }) {
   const navigation = useNavigation();
   const [selectedStatus, setSelectedStatus] = useState("To do");
