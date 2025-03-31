@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -11,6 +11,8 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { fetchGetTopicList } from "../../context/fetchData";
+import api from "../../utils/api";
+import { AuthContext } from "../../context/AuthContext";
 
 // Giả lập hàm fetch từ backend
 
@@ -77,16 +79,28 @@ const TopicCard = ({ topic }) => {
 
 const DanhSachDeTai = () => {
   const navigation = useNavigation();
-
+  const { user } = useContext(AuthContext);
   const [searchText, setSearchText] = useState("");
   const [topics, setTopics] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  console.log("user nè: ", user);
   useEffect(() => {
-    const loadTopics = async () => {
-      const data = await fetchGetTopicList();
-      console.log("DS de tai:", data);
-      setTopics(data);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get("/topics");
+        setTopics(response.data.results);
+      } catch (err) {
+        console.error("Fetch error:", err);
+        setError(err.message);
+        setTopics([]);
+      } finally {
+        setLoading(false);
+      }
     };
-    loadTopics();
+
+    fetchData();
   }, []);
 
   const filteredTopics = topics.filter(

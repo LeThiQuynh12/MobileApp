@@ -3,7 +3,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // export const API_URL = "http://10.0.2.2:8080/api";
-export const API_URL = "http://192.168.3.102:8080/api";
+export const API_URL = "http://192.168.0.103:8080/api";
 // Lưu token
 export const saveTokens = async ({
   access_token,
@@ -12,7 +12,7 @@ export const saveTokens = async ({
   refresh_expires_in = 1000,
 }) => {
   try {
-    console.log("token: ", access_token, refresh_token);
+    // console.log("token: ", access_token, refresh_token);
     const access_expires_at = Date.now() + access_expires_in * 1000; // Tính thời gian hết hạn (millisecond)
     const refresh_expires_at = Date.now() + refresh_expires_in * 1000; // Tính thời gian hết hạn (millisecond)
     const tokens = JSON.stringify({
@@ -103,7 +103,7 @@ const api = axios.create({
 api.interceptors.request.use(
   async (config) => {
     const tokens = await getTokens(); // Lấy access token từ AsyncStorage
-    console.log("tokens.access_token:", tokens?.access_token);
+    // console.log("tokens.access_token:", tokens?.access_token);
     if (tokens?.access_token) {
       config.headers.Authorization = `Bearer ${tokens.access_token}`;
     }
@@ -113,27 +113,27 @@ api.interceptors.request.use(
 );
 
 // ✨ Thêm interceptor để tự động refresh token khi bị lỗi 401
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
+// api.interceptors.response.use(
+//   (response) => response,
+//   async (error) => {
+//     const originalRequest = error.config;
 
-    // Nếu gặp lỗi 401 và chưa thử refresh token lần nào
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      const tokens = await getTokens();
+//     // Nếu gặp lỗi 401 và chưa thử refresh token lần nào
+//     if (error.response?.status === 401 && !originalRequest._retry) {
+//       originalRequest._retry = true;
+//       const tokens = await getTokens();
 
-      if (tokens?.refresh_token) {
-        const newTokens = await refreshTokens(tokens.refresh_token);
-        if (newTokens?.access_token) {
-          originalRequest.headers.Authorization = `Bearer ${newTokens.access_token}`;
-          return api(originalRequest); // Gửi lại request cũ với token mới
-        }
-      }
-    }
+//       if (tokens?.refresh_token) {
+//         const newTokens = await refreshTokens(tokens.refresh_token);
+//         if (newTokens?.access_token) {
+//           originalRequest.headers.Authorization = `Bearer ${newTokens.access_token}`;
+//           return api(originalRequest); // Gửi lại request cũ với token mới
+//         }
+//       }
+//     }
 
-    return Promise.reject(error);
-  }
-);
+//     return Promise.reject(error);
+//   }
+// );
 
 export default api;

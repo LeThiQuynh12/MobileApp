@@ -19,7 +19,7 @@ export const fetchGetTopicList = async () => {
     const tokens = await getTokens(); // tokens là object chứa access_token và refresh_token
     const accessToken = tokens?.access_token; // Chỉ lấy access_token
 
-    console.log("Access Token:", accessToken); // Debug token
+    // console.log("Access Token:", accessToken); // Debug token
 
     if (!accessToken) {
       throw new Error("Không tìm thấy access_token. Vui lòng đăng nhập lại.");
