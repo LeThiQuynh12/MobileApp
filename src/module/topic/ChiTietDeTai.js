@@ -1,15 +1,20 @@
-import React from "react";
+import React from 'react';
+
 import {
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Image,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useNavigation, useRoute } from "@react-navigation/native";
-import color from "../../utils/color";
+} from 'react-native';
+
+import { Ionicons } from '@expo/vector-icons';
+import {
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
+
+import color from '../../utils/color';
 
 const ChiTietDeTai = () => {
   const { params } = useRoute();

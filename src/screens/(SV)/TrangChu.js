@@ -1,115 +1,148 @@
-import React, { useEffect, useState } from "react";
+import React, {
+  useEffect,
+  useState,
+} from 'react';
 
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
-import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import { FontAwesome } from '@expo/vector-icons';
 
-import color from "../../utils/color";
+import api from '../../utils/api';
+import color from '../../utils/color';
 
-const daysOfWeek = [
-  "Chủ Nhật",
-  "Thứ Hai",
-  "Thứ Ba",
-  "Thứ Tư",
-  "Thứ Năm",
-  "Thứ Sáu",
-  "Thứ Bảy",
-];
-
+const daysOfWeek = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
 const today = new Date();
 
 const SupervisionTopics = () => {
-  const getData = async () => {
-    // try {
-    //     const response = await fetch('http://192.168.1.100:8080/api/tailieu');
-    //   const data = await response.json();
-    //   console.log(data); // Dữ liệu từ API
-    // } catch (error) {
-    //   console.error('Lỗi khi gọi API:', error);
-    // }
-  };
-
+  const [user, setUser] = useState(null); // Thông tin người dùng
+  const [student, setStudent] = useState(null); // Thông tin sinh viên
+  const [topics, setTopics] = useState([]); // Danh sách đề tài của sinh viên
+  const [totalTopics, setTotalTopics] = useState(0);
+  const [tasks, setTasks] = useState([]); // Danh sách nhiệm vụ của sinh viên
+  
   useEffect(() => {
-    getData();
+    const fetchData = async () => {
+      try {
+        const userResponse = await api.get("/auth/account");
+        const userData = userResponse.data.results;
+        setUser(userData);
+  
+        const studentsResponse = await api.get("/students");
+        const foundStudent = studentsResponse.data.results.find((stu) => stu.user.id === userData.id);
+        setStudent(foundStudent);
+  
+        if (foundStudent) {
+          // Lấy danh sách đề tài của sinh viên
+          const topicsResponse = await api.get(`/topics?studentId=${foundStudent.id}`);
+          const filteredTopics = topicsResponse.data.results.filter(
+            topic => String(topic.idSinhVien) === String(foundStudent.id)
+          );
+          setTopics(filteredTopics);
+  
+          // Lấy tổng số đề tài của tất cả sinh viên
+          const allTopicsResponse = await api.get("/topics");
+          setTotalTopics(allTopicsResponse.data.results.length);
+
+          // Lấy danh sách nhiệm vụ của sinh viên
+          const tasksResponse = await api.get("/tasks");
+          const studentTasks = tasksResponse.data.results.filter(task => 
+            task.students.some(stu => stu.id === foundStudent.id)
+          );
+          setTasks(studentTasks);
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu:", error.response?.data || error.message);
+      }
+    };
+  
+    fetchData();
   }, []);
-  const [expandedTopic1, setExpandedTopic1] = useState(false);
-  const [expandedTopic2, setExpandedTopic2] = useState(false);
-  console.log(123);
+
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <Text style={styles.greeting}>
-        Xin chào, <Text style={{ fontWeight: "bold" }}>TênSV</Text>
-      </Text>
-      <Text>Mã sinh viên: &lt;mãSV&gt;</Text>
+    <ScrollView>
+      <View style={styles.container}>
+        <Text style={styles.greeting}>
+          <FontAwesome name="hand-paper-o" size={18} color="#007AFF" /> {" "}
+          Xin chào, <Text style={{ fontWeight: "bold" }}>{user?.fullName || "..."}</Text>
+        </Text>
 
-      {/* Ngày tháng */}
-      <View style={styles.dateSection}>
-        <FontAwesome name="calendar" size={24} color="#007AFF" />
-        <View>
-          <Text style={styles.dateText}>
-            {`${daysOfWeek[today.getDay()]}, ${today.getDate()}/${
-              today.getMonth() + 1
-            }/${today.getFullYear()}`}
-          </Text>
-          <Text style={styles.normalText}>Có &lt;?&gt; cập nhật mới</Text>
+        <Text>Mã sinh viên: {student?.id || "Chưa có dữ liệu"}</Text>
+
+        <View style={styles.dateSection}>
+          <FontAwesome name="calendar" size={24} color="#007AFF" />
+          <View>
+            <Text style={styles.dateText}>
+              {`${daysOfWeek[today.getDay()]}, ${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear()}`}
+            </Text>
+            <Text style={styles.normalText}>Bạn có {topics.length} đề tài đang thực hiện</Text>
+          </View>
         </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Đề tài của bạn</Text>
+          <View style={styles.totalTopicsContainer}>
+            <Text style={styles.totalTopicsText}>
+              Tổng số đề tài: <Text style={{ fontWeight: "bold" }}>{topics.length}/{totalTopics}</Text>
+            </Text>
+          </View>
+
+          {topics.map((topic, index) => (
+            <TouchableOpacity key={topic.id} style={styles.topicItem}>
+              <View style={styles.circleNumber}>
+                <Text style={styles.numberText}>{index + 1}</Text>
+              </View>
+              <View style={styles.topicInfo}>
+                <Text style={styles.topicTitle}>{topic.tenDeTai}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+       {/* Danh sách nhiệm vụ */}
+      <View style={styles.cardTask}>
+        <Text style={styles.cardTitle}>Nhiệm vụ của bạn</Text>
+        {tasks.length === 0 ? (
+          <Text style={styles.normalText}>Bạn chưa có nhiệm vụ nào.</Text>
+        ) : (
+          tasks.map((task, index) => {
+            let statusColor = "#000"; // Mặc định màu đen
+            if (task.trangThai === "Đang thực hiện") statusColor = "#28a745"; // Xanh lá
+            else if (task.trangThai === "Hoàn thành") statusColor = "#007bff"; // Xanh dương
+            else if (task.trangThai === "Chưa bắt đầu") statusColor = "#dc3545"; // Đỏ
+
+            return (
+              <View key={index} style={styles.taskItem}>
+                <Text style={styles.taskTitle}>{task.tenCongViec}</Text>
+                <Text style={styles.taskDescription}>{task.moTa}</Text>
+                <Text style={[styles.taskStatus, { color: statusColor }]}>
+                  Trạng thái: {task.trangThai}
+                </Text>
+              </View>
+            );
+          })
+        )}
       </View>
 
-      {/* Danh sách Nhiệm vụ */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Nhiệm vụ cần làm:</Text>
 
-        {/* Nhiệm vụ 1 */}
-        <TouchableOpacity
-          style={styles.topicItem}
-          onPress={() => setExpandedTopic1(!expandedTopic1)}
-        >
-          <Text>Nhiệm vụ 1</Text>
-          <MaterialIcons
-            name={expandedTopic1 ? "keyboard-arrow-up" : "keyboard-arrow-down"}
-            size={24}
-            color="black"
-          />
-        </TouchableOpacity>
-        {expandedTopic1 && (
-          <Text style={styles.subText}>Thời hạn: 1/1/2000</Text>
-        )}
-
-        {/* nhiệm vụ 2 */}
-        <TouchableOpacity
-          style={styles.topicItem}
-          onPress={() => setExpandedTopic2(!expandedTopic2)}
-        >
-          <Text>Nhiệm vụ 2</Text>
-          <MaterialIcons
-            name={expandedTopic2 ? "keyboard-arrow-up" : "keyboard-arrow-down"}
-            size={24}
-            color="black"
-          />
-        </TouchableOpacity>
-        {expandedTopic2 && (
-          <Text style={styles.subText}>Thời hạn: 2/2/2000</Text>
-        )}
       </View>
-    </View>
+    </ScrollView>
   );
 };
-
-// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: color.lightGray,
+    backgroundColor: "#F5F5F5",
     padding: 20,
   },
   greeting: {
     fontSize: 18,
     color: color.mainColor,
-  },
-  subText: {
-    fontSize: 14,
-    color: color.gray,
     marginBottom: 10,
   },
   dateSection: {
@@ -123,29 +156,113 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: color.mainColor,
+    marginBottom: 10,
+  },
+  normalText: {
+    color: color.textColor,
   },
   card: {
-    backgroundColor: "white",
-    padding: 15,
-    borderRadius: 10,
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 30,
     shadowColor: "#000",
     shadowOpacity: 0.1,
-    marginBottom: 20,
+    paddingBottom: 30,
+    borderColor: "#64B5F6",
+    borderWidth: 2,
   },
-  cardTitle: {
+  cardTask:{
+    marginTop: 20,
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 30,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    paddingBottom: 30,
+    borderColor: "#64B5F6",
+    borderWidth: 2,
+  },
+  totalTopicsContainer: {
+    alignItems: "center",
+    marginBottom: 10,
+    backgroundColor: "#E3F2FD",
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  totalTopicsText: {
     fontSize: 16,
     fontWeight: "bold",
+    color: "#1976D2",
+  },
+  circleNumber: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: "#5DADE2",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
+  numberText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  cardTitle: {
+    fontSize: 14,
     marginBottom: 10,
-    color: color.mainColor,
+    color: "#000",
+    textAlign: "center",
+    borderBottomColor: "#000",
+    borderBottomWidth: 1,
+    padding: 10,
+    marginHorizontal: 50,
   },
   topicItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+    marginHorizontal: 20,
+    paddingHorizontal: 30,
+    marginBottom: 10,
   },
-  normalText: {
-    color: color.textColor, // Hoặc sử dụng color.textColor nếu có biến màu chung
+  topicInfo: {
+    flexDirection: "column",
+    justifyContent: "center",
   },
+  topicTitle: {
+    fontSize: 15,
+    color: color.mainColor,
+  },
+   taskItem: {
+    backgroundColor: "#E3F2FD",
+    padding: 12,
+    borderRadius: 12, // Bo góc đẹp hơn
+    marginVertical: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3, // Đổ bóng nhẹ cho Android
+
+  },
+  taskTitle: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: "#5DADE2",
+  },
+  taskDescription: {
+    fontSize: 14,
+    color: "#666",
+    marginVertical: 4,
+  },
+  taskStatus: {
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+
 });
 
 export default SupervisionTopics;
