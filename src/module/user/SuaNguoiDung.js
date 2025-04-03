@@ -1,154 +1,276 @@
-import React, {
-  useEffect,
-  useState,
-} from 'react';
-
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  KeyboardAvoidingView,
+  ScrollView,
+  Keyboard,
+  Platform,
+  TouchableWithoutFeedback,
   View,
-} from 'react-native';
-import DropDownPicker from 'react-native-dropdown-picker';
-
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+} from "react-native";
+import DropDownPicker from "react-native-dropdown-picker";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import color from "../../utils/color";
+import api from "../../utils/api";
 
 const SuaNguoiDung = ({ route }) => {
   const navigation = useNavigation();
 
-  // Nhận dữ liệu từ route (Giả sử truyền từ màn hình trước đó)
-  const user = route && route.params ? route.params.user : null;
-
+  // Nhận dữ liệu từ route
+  const user = route?.params?.user || null;
 
   // State lưu thông tin user
-  const [code, setCode] = useState("");
-  const [name, setName] = useState("");
+  const [id, setId] = useState("");
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [gender, setGender] = useState("");
   const [password, setPassword] = useState("");
+  const [selectedRole, setSelectedRole] = useState("");
 
   const [openRole, setOpenRole] = useState(false);
-  const [selectedRole, setSelectedRole] = useState(null);
   const [roles, setRoles] = useState([
     { label: "Giảng viên", value: "gv" },
     { label: "Sinh viên", value: "sv" },
-  ]);
-
-  const [openPower, setOpenPower] = useState(false);
-  const [selectedPower, setSelectedPower] = useState([]);
-  const [powers, setPowers] = useState([
-    { label: "Duyệt đề tài", value: "DuyetDeTai" },
-    { label: "Xem tiến độ", value: "XemTienDo" },
-    { label: "Thông tin cá nhân", value: "ThongTinCaNhan" },
-    { label: "Đăng ký đề tài", value: "DangKyDeTai" },
-    { label: "Giao nhiệm vụ", value: "GiaoNhiemVu" },
+    { label: "Admin", value: "ad" },
   ]);
 
   // Set dữ liệu khi mở form
   useEffect(() => {
     if (user) {
-      setCode(user.code || "");
-      setName(user.name || "");
+      setId(user.id?.toString() || "");
+      setFullName(user.fullName || "");
       setEmail(user.email || "");
-      setSelectedRole(user.role === "Giảng viên" ? "gv" : "sv");
-  
-      // Chuyển chuỗi quyền thành mảng
-      const userPowers = user.power ? user.power.split(", ") : [];
-      setSelectedPower(userPowers);
+      setPhoneNumber(user.phoneNumber || "");
+      setGender(user.gender || "");
+      setSelectedRole(
+        user.role === "ADMIN" ? "ad" : user.role === "USER" ? "sv" : "gv"
+      );
     }
   }, [user]);
-  
-  
+
+  const [validation, setValidation] = useState({
+    fullName: { error: '', isOke: false },
+    email: { error: '', isOke: false },
+    phoneNumber: { error: '', isOke: false },
+    password: { error: '', isOke: false },
+  })
+
+  const checkFullName = () => {
+    setValidation(prev => {
+      const newValid = { ...prev };
+      if (fullName === '')
+        newValid.fullName = { error: 'Bạn chưa nhập họ tên đầy đủ', isOke: false };
+      else
+        newValid.fullName = { error: '', isOke: true };
+      return newValid;
+    })
+  }
+
+  const checkEmail = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    setValidation(prev => {
+      const newValid = { ...prev };
+      if (email === '')
+        newValid.email = { error: 'Bạn chưa nhập email', isOke: false };
+      else
+        if (!emailRegex.test(email))
+          newValid.email = { error: 'Bạn nhập email không đúng định dạng', isOke: false };
+        else
+          newValid.email = { error: '', isOke: true };
+      return newValid;
+    })
+  }
+
+  const checkPhoneNumber = () => {
+    const phoneRegex = /^0\d{9}$/;
+    setValidation(prev => {
+      const newValid = { ...prev };
+      if (phoneNumber === '')
+        newValid.phoneNumber = { error: 'Bạn chưa nhập số điện thoại', isOke: false };
+      else
+        if (!phoneRegex.test(phoneNumber))
+          newValid.phoneNumber = { error: 'Số điện thoại không hợp lệ! Phải có 10 chữ số và bắt đầu bằng 0.', isOke: false };
+        else
+          newValid.phoneNumber = { error: '', isOke: true };
+      return newValid;
+    });
+  };
+
+  const checkPassword = () => {
+    setValidation(prev => {
+      const newValid = { ...prev };
+      if (password === '')
+        newValid.password = { error: '', isOke: true };
+      else
+        if (password.length < 6)
+          newValid.password = { error: 'Mật khẩu phải có ít nhất 6 ký tự.', isOke: false };
+        else
+          newValid.password = { error: '', isOke: true };
+      return newValid;
+    });
+  };
+
+  const handleUpdate = () => {
+    checkEmail();
+    checkFullName();
+    checkPhoneNumber();
+  };
+
+  useEffect(() => {
+    if (
+      validation.email.isOke &&
+      validation.fullName.isOke &&
+      validation.phoneNumber.isOke
+    ) {
+      updateUser();
+    }
+  }, [validation]);
+
+  const updateUser = async () => {
+    try {
+      const updatedUser = {
+        fullName,
+        email,
+        phoneNumber,
+        gender,
+        role: selectedRole === "ad" ? "ADMIN" : selectedRole === "sv" ? "USER" : "TEACHER",
+      };
+
+      if (password.trim() !== "") {
+        checkPassword();
+        if (!validation.password.isOke) return;
+        updatedUser.password = password;
+      }
+
+      console.log("call api");
+      const response = await api.put(`/users/${id}`, updatedUser);
+      if (response.status === 200) {
+        alert("Cập nhật thành công!");
+        navigation.navigate("QuanLyNguoiDung");
+      } else {
+        alert("Cập nhật thất bại, vui lòng thử lại!");
+      }
+    } catch (error) {
+      console.error("Lỗi cập nhật người dùng:", error);
+      alert("Đã có lỗi xảy ra, vui lòng thử lại!");
+    }
+  };
 
   return (
-    <View style={styles.container}>
-      {/* Thanh tiêu đề */}
-      <View style={styles.header}>
-        <Ionicons
-          name="arrow-back"
-          size={24}
-          color="white"
-          onPress={() => navigation.navigate("QuanLyNguoiDung")}
-        />
-        <Text style={styles.headerTitle}>Sửa người dùng</Text>
-      </View>
 
-      <View style={styles.formContainer}>
-        <View style={styles.row}>
-          <Text style={styles.label}>Mã:</Text>
-          <TextInput
-            style={styles.input}
-            value={code}
-            onChangeText={setCode}
-          />
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Họ và tên:</Text>
-          <TextInput
-            style={styles.input}
-            value={name}
-            onChangeText={setName}
-          />
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Email:</Text>
-          <TextInput
-            style={styles.input}
-            value={email}
-            onChangeText={setEmail}
-          />
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Mật khẩu:</Text>
-          <TextInput
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
-        </View>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <ScrollView contentContainerStyle={styles.scrollView}>
+          <View style={styles.container}>
+            {/* Thanh tiêu đề */}
+            <View style={styles.header}>
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color="white"
+                onPress={() => navigation.navigate("QuanLyNguoiDung")}
+              />
+              <Text style={styles.headerTitle}>Sửa người dùng</Text>
+            </View>
 
-        <View style={styles.row}>
-          <Text style={styles.label}>Vai trò:</Text>
-          <View style={styles.dropdownWrapper}>
-            <DropDownPicker
-              open={openRole}
-              value={selectedRole}
-              items={roles}
-              setOpen={setOpenRole}
-              setValue={setSelectedRole}
-              setItems={setRoles}
-              placeholder="Chọn vai trò"
-              style={styles.dropdown}
-              dropDownContainerStyle={styles.dropdownContainer}
-            />
+            <View style={styles.formContainer}>
+              <View style={styles.row}>
+                <Text style={styles.label}>Mã:</Text>
+                <TextInput style={styles.input} value={id} editable={false} />
+              </View>
+              <View style={styles.row}>
+                <Text style={styles.label}>Họ và tên:</Text>
+                <TextInput
+                  style={styles.input}
+                  value={fullName}
+                  onChangeText={(text) => setFullName(text)}
+                />
+              </View>
+              <View style={styles.row}>
+                <Text style={styles.label}>Email:</Text>
+                <TextInput
+                  style={styles.input}
+                  value={email}
+                  onChangeText={(text) => setEmail(text)}
+                />
+              </View>
+              {validation.email.error === '' ? '' : <Text style={styles.error}>{validation.email.error}</Text>}
+
+              <View style={styles.row}>
+                <Text style={styles.label}>Số điện thoại:</Text>
+                <TextInput
+                  style={styles.input}
+                  value={phoneNumber}
+                  onChangeText={(text) => setPhoneNumber(text)}
+                />
+              </View>
+              {validation.phoneNumber.error === '' ? '' : <Text style={styles.error}>{validation.phoneNumber.error}</Text>}
+
+              <View style={styles.row}>
+                <Text style={styles.label}>Giới tính:</Text>
+                <TouchableOpacity
+                  style={[
+                    styles.radioButton,
+                    gender === "MALE" && styles.selectedRadio,
+                  ]}
+                  onPress={() => setGender("MALE")}
+                >
+                  <Text style={styles.radioText}>Nam</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.radioButton,
+                    gender === "FEMALE" && styles.selectedRadio,
+                  ]}
+                  onPress={() => setGender("FEMALE")}
+                >
+                  <Text style={styles.radioText}>Nữ</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.row}>
+                <Text style={styles.label}>Mật khẩu:</Text>
+                <TextInput
+                  style={styles.input}
+                  value={password}
+                  onChangeText={(text) => setPassword(text)}
+                  secureTextEntry
+                />
+              </View>
+              {validation.password.error === '' ? '' : <Text style={styles.error}>{validation.password.error}</Text>}
+
+              <View style={styles.row}>
+                <Text style={styles.label}>Vai trò:</Text>
+                <View style={styles.dropdownWrapper}>
+                  <DropDownPicker
+                    open={openRole}
+                    value={selectedRole}
+                    items={roles}
+                    setOpen={setOpenRole}
+                    setValue={setSelectedRole}
+                    setItems={setRoles}
+                    style={styles.dropdown}
+                    dropDownContainerStyle={styles.dropdownContainer}
+                  />
+                </View>
+              </View>
+            </View>
+
+            <TouchableOpacity style={styles.submitButton} onPress={handleUpdate}>
+              <Text style={styles.submitButtonText}>Lưu thay đổi</Text>
+            </TouchableOpacity>
           </View>
-        </View>
-
-        <View style={styles.row}>
-          <Text style={styles.label}>Quyền truy cập:</Text>
-          <View style={styles.dropdownWrapper}>
-            <DropDownPicker
-              open={openPower}
-              value={selectedPower}
-              items={powers}
-              setOpen={setOpenPower}
-              setValue={setSelectedPower}
-              setItems={setPowers}
-              multiple={true} // Hỗ trợ chọn nhiều quyền
-              placeholder="Chọn quyền"
-              style={styles.dropdown}
-              dropDownContainerStyle={styles.dropdownContainer}
-            />
-          </View>
-        </View>
-      </View>
-
-      <TouchableOpacity style={styles.submitButton}>
-        <Text style={styles.submitButtonText}>Lưu thay đổi</Text>
-      </TouchableOpacity>
-    </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -160,16 +282,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F2F2",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#64B5F6',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#64B5F6",
     padding: 25,
     paddingTop: 60,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: 'white',
+    fontWeight: "bold",
+    color: "white",
     marginLeft: 15,
   },
   formContainer: {
@@ -197,6 +319,25 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     backgroundColor: "#fff",
+  },
+  error: {
+    color: color.red,
+    fontSize: 12
+  },
+  radioButton: {
+    borderWidth: 2,
+    borderColor: "#1976D2",
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginHorizontal: 5,
+  },
+  selectedRadio: {
+    backgroundColor: "#64B5F6",
+  },
+  radioText: {
+    fontSize: 14,
+    color: "#000",
   },
   submitButton: {
     marginTop: 35,

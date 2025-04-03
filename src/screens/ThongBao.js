@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import color from "../utils/color";
 import api from "../utils/api";
+import { AuthContext } from "../context/AuthContext";
 
 const NotificationScreen = () => {
   const [filter, setFilter] = useState("Gần đây"); // Bộ lọc
@@ -18,14 +19,13 @@ const NotificationScreen = () => {
   const [filteredNotifications, setFilteredNotifications] = useState([]); // Dữ liệu sau lọc
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { user } = useContext(AuthContext);
 
   // 🛠 GET danh sách thông báo từ API
-  const fetchNotifications = async () => {
+  const fetchNotifications = async (userId) => {
     try {
       setLoading(true);
-      const response = await api.get("/notifications");
-
-      console.log("API Response:", response.data);
+      const response = await api.get(`/notifications/user/${userId}`);
 
       if (response.data && Array.isArray(response.data.results)) {
         setAllNotifications(response.data.results);
@@ -42,8 +42,10 @@ const NotificationScreen = () => {
   };
 
   useEffect(() => {
-    fetchNotifications();
-  }, []);
+    if (user) {
+      fetchNotifications(user.id);
+    }
+  }, [user]);
 
   // 📌 Bộ lọc thông báo dựa trên trạng thái
   const filterNotifications = (option) => {

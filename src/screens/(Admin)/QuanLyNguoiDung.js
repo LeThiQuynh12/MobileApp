@@ -1,4 +1,4 @@
-import React from 'react';
+import { React, useState, useEffect } from 'react';
 
 import {
   Alert,
@@ -8,67 +8,63 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
   View,
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-
-const users = [
-  {
-    id: "1",
-    avatar:
-      "https://png.pngtree.com/png-clipart/20190120/ourlarge/pngtree-teachers-day-teachers-day-illustration-cartoon-teacher-glasses-teacher-png-image_493446.jpg",
-    code: "TS1234",
-    name: "TS. Trần Trung",
-    email: "trungt123@gmail.com",
-    role: "Giảng viên",
-  },
-  {
-    id: "2",
-    avatar:
-      "https://tse1.mm.bing.net/th?id=OIP.qIf5gKDvYwWfNPznR2jxIQAAAA&pid=Api&P=0&h=180",
-    code: "HT1508",
-    name: "Hoàng Thị Thảo",
-    email: "hoangthithao@gmail.com",
-    role: "Sinh viên",
-  },
-  {
-    id: "233",
-    avatar:
-      "https://tse1.mm.bing.net/th?id=OIP.qIf5gKDvYwWfNPznR2jxIQAAAA&pid=Api&P=0&h=180",
-    code: "HT1508",
-    name: "Hoàng Thị Thảo",
-    email: "hoangthithao@gmail.com",
-    role: "Sinh viên",
-  },
-  {
-    id: "23w3",
-    avatar:
-      "https://tse1.mm.bing.net/th?id=OIP.qIf5gKDvYwWfNPznR2jxIQAAAA&pid=Api&P=0&h=180",
-    code: "HT1508",
-    name: "Hoàng Thị Thảo",
-    email: "hoangthithao@gmail.com",
-    role: "Sinh viên",
-  },
-  {
-    id: "332",
-    avatar:
-      "https://tse1.mm.bing.net/th?id=OIP.qIf5gKDvYwWfNPznR2jxIQAAAA&pid=Api&P=0&h=180",
-    code: "HT1508",
-    name: "Hoàng Thị Thảo",
-    email: "hoangthithao@gmail.com",
-    role: "Sinh viên",
-  },
-];
+import api from '../../utils/api';
+import color from '../../utils/color';
 
 const QuanLyNguoiDung = () => {
   const navigation = useNavigation();
-  
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const fetchUser = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get(`/users`);
+      setUsers(response.data.results || []);
+      console.log(users);
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+      setError("Không thể tải thông tin người dùng, vui lòng thử lại!");
+    } finally {
+      setLoading(false);
+    }
+  }
+  useEffect(() => {
+    fetchUser();
+
+    // const interval = setInterval(() => {
+    //   fetchUser();
+    // }, 30000);
+
+    // return () => clearInterval(interval);
+  }, []);
+
   const handleDelete = (userId) => {
     Alert.alert("Xác nhận xóa", "Bạn có chắc chắn muốn xóa người dùng này?", [
       { text: "Hủy", style: "cancel" },
-      { text: "Xóa", style: "destructive" },
+      {
+        text: "Xóa",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            setLoading(true);
+            await api.delete(`/users/${userId}`);
+            setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+            Alert.alert("Thành công", "Người dùng đã được xóa!");
+          } catch (error) {
+            console.error("Lỗi khi xóa người dùng:", error);
+            Alert.alert("Lỗi", "Không thể xóa người dùng, vui lòng thử lại!");
+          } finally {
+            setLoading(false);
+          }
+        },
+      },
     ]);
   };
 
@@ -76,44 +72,50 @@ const QuanLyNguoiDung = () => {
     <View style={styles.container}>
       <View style={styles.searchContainer}>
         <Ionicons name="search" size={22} color="#64B5F6" style={styles.searchIcon} />
-        <TextInput 
-          placeholder="Tìm kiếm người dùng"  
-          placeholderTextColor="#64B5F6" 
-          style={styles.searchInput} 
+        <TextInput
+          placeholder="Tìm kiếm người dùng"
+          placeholderTextColor="#64B5F6"
+          style={styles.searchInput}
         />
       </View>
+      {loading ? (
+        <ActivityIndicator size="large" color={color.darkBlue} />
+      ) : error ? (
+        <Text style={{ color: "red", textAlign: "center" }}>{error}</Text>
+      ) : (
+        <FlatList
+          data={users}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <Image source={{ uri: item.avatar }} style={styles.avatar} />
+              <View style={styles.infoContainer}>
+                <Text style={[styles.text, styles.borderBottom]}><Text style={styles.boldText}>Mã:</Text> {item.id}</Text>
+                <Text style={[styles.text, styles.borderBottom]}><Text style={styles.boldText}>Họ và tên:</Text> {item.fullName}</Text>
+                <Text style={[styles.text, styles.borderBottom]}><Text style={styles.boldText}>Giới tính:</Text> {item.gender === 'MALE' ? 'Nam' : 'Nữ'}</Text>
+                <Text style={styles.text}><Text style={styles.boldText}>Vai trò:</Text> {item.role}</Text>
+              </View>
+              <View style={styles.iconContainer}>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate("SuaNguoiDung", { user: item })}
+                  style={styles.iconButton}
+                  activeOpacity={0.6}
+                >
+                  <Ionicons name="pencil" size={24} color="#4fff" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => handleDelete(item.id)}
+                  style={styles.iconButton}
+                  activeOpacity={0.6}
+                >
+                  <Ionicons name="trash" size={24} color="#FF5252" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        />
+      )}
 
-      <FlatList
-        data={users}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Image source={{ uri: item.avatar }} style={styles.avatar} />
-            <View style={styles.infoContainer}>
-              <Text style={[styles.text, styles.borderBottom]}><Text style={styles.boldText}>Mã:</Text> {item.code}</Text>
-              <Text style={[styles.text, styles.borderBottom]}><Text style={styles.boldText}>Họ và tên:</Text> {item.name}</Text>
-              <Text style={[styles.text, styles.borderBottom]}><Text style={styles.boldText}>Email:</Text> {item.email}</Text>
-              <Text style={styles.text}><Text style={styles.boldText}>Vai trò:</Text> {item.role}</Text>
-            </View>
-            <View style={styles.iconContainer}>
-              <TouchableOpacity 
-                onPress={() => navigation.navigate("SuaNguoiDung", { user: item })} 
-                style={styles.iconButton}
-                activeOpacity={0.6}
-              >
-                <Ionicons name="pencil" size={24} color="#4fff" />
-              </TouchableOpacity>
-              <TouchableOpacity 
-                onPress={() => handleDelete(item.id)}
-                style={styles.iconButton}
-                activeOpacity={0.6}
-              >
-                <Ionicons name="trash" size={24} color="#FF5252" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-      />
     </View>
   );
 };
@@ -162,9 +164,9 @@ const styles = StyleSheet.create({
     borderColor: "#64B5F6",
   },
   infoContainer: { flex: 1 },
-  text: { 
-    marginVertical: 5, 
-    paddingBottom: 5, 
+  text: {
+    marginVertical: 5,
+    paddingBottom: 5,
     fontSize: 13,
     color: "#333",
   },
@@ -177,7 +179,7 @@ const styles = StyleSheet.create({
     flexDirection: "",
     gap: 15,
   },
-  iconButton: { 
+  iconButton: {
     borderRadius: 5,
     backgroundColor: "#1976D2",
     padding: 2,

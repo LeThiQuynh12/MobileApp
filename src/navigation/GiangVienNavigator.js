@@ -32,7 +32,7 @@ import DanhSachNhiemVu from "../module/task/DanhSachNhiemVu";
 import GiaoNhiemVu from "../module/task/GiaoNhiemVu";
 import { AuthContext } from "../context/AuthContext";
 import api from "../utils/api";
-
+import SuaDeTai from "../module/topic/ChinhSuaDeTai";
 // Tạo các navigator
 const Drawer = createDrawerNavigator();
 const Tab = createBottomTabNavigator();
@@ -208,6 +208,22 @@ function DanhSachDeTaiStack() {
         component={DangKyDeTai}
         options={{
           headerTitle: "Đăng ký đề tài", // Thêm lại tiêu đề\
+          headerStyle: {
+            backgroundColor: color.mainColor, // Màu xanh cho header
+          },
+          headerTitleStyle: {
+            fontSize: 18,
+          },
+          headerTintColor: color.white, // Màu chữ trắng để dễ đọc
+          headerLeft: () => <BackButton />, // Thay menu bằng nút quay lại
+          headerRight: "",
+        }}
+      />
+      <Stack.Screen
+        name="SuaDeTai"
+        component={SuaDeTai}
+        options={{
+          headerTitle: "Chỉnh sửa đề tài", // Thêm lại tiêu đề\
           headerStyle: {
             backgroundColor: color.mainColor, // Màu xanh cho header
           },

@@ -1,168 +1,176 @@
-import React from "react";
-
+import React, { useState } from "react";
 import {
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
+  Alert,
+  ScrollView,
+  ActivityIndicator,
 } from "react-native";
-//import { TextInput } from 'react-native-gesture-handler';
-import Icon from "react-native-vector-icons/FontAwesome";
-
-import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { postTopicList } from "../../context/fetchData";
+import { Calendar } from "react-native-calendars";
+import Icon from "react-native-vector-icons/FontAwesome";
 
 const DangKyDeTai = () => {
   const navigation = useNavigation();
+  const [topicData, setTopicData] = useState({
+    tenDeTai: "",
+    giangVienHuongDan: "",
+    chuNhiemDeTai: "",
+    thanhVien: "",
+    moTa: "",
+    khoa: "",
+    linhVucNghienCuu: "",
+    ngayBatDau: "",
+    ngayKetThuc: "",
+    taiLieu: null,
+  });
+
+  const [showCalendar, setShowCalendar] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (name, value) => {
+    setTopicData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleDayPress = (key, day) => {
+    handleChange(key, day.dateString);
+    setShowCalendar(null);
+  };
+
+  const handleSubmit = async () => {
+    if (
+      !topicData.tenDeTai ||
+      !topicData.giangVienHuongDan ||
+      !topicData.chuNhiemDeTai
+    ) {
+      Alert.alert("Lỗi", "Vui lòng điền đầy đủ các trường bắt buộc");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const response = await postTopicList(topicData);
+      if (response) {
+        Alert.alert("Thành công", "Đăng ký đề tài thành công");
+        navigation.goBack();
+      } else {
+        throw new Error("Đăng ký thất bại");
+      }
+    } catch (error) {
+      Alert.alert("Lỗi", error.message || "Có lỗi xảy ra khi đăng ký đề tài");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <View style={styles.container}>
-      {/* <View style={styles.header}>
-        <Ionicons name="menu" size={24} color="white" onPress={() => navigation.openDrawer()} />
-        <Text style={styles.headerTitle}>Đăng ký đề tài </Text>
-      </View> */}
+    <ScrollView style={styles.container}>
       <View style={styles.formContainer}>
-        <View style={styles.row}>
-          <Text style={styles.label}>
-            Tên đề tài: <Text style={styles.required}>*</Text>
-          </Text>
-          <TextInput style={[styles.input, styles.flexInput]} />
-        </View>
+        {[
+          { key: "tenDeTai", label: "Tên đề tài" },
+          { key: "idGiangVien", label: "Giảng viên hướng dẫn" },
+          { key: "idSinhVien", label: "Chủ nhiệm đề tài" },
+          //{ key: "thanhVien", label: "Thành viên" },
+          { key: "moTa", label: "Mô tả" },
+          { key: "khoa", label: "Khoa" },
+          { key: "linhVucNghienCuu", label: "Lĩnh vực nghiên cứu" },
+        ].map(({ key, label }) => (
+          <View key={key} style={styles.row}>
+            <Text style={styles.label}>{label}:</Text>
+            <TextInput
+              style={styles.input}
+              value={topicData[key]}
+              onChangeText={(text) => handleChange(key, text)}
+              placeholder={`Nhập ${label.toLowerCase()}`}
+            />
+          </View>
+        ))}
 
-        <View style={styles.row}>
-          <Text style={styles.label}>
-            Người hướng dẫn: <Text style={styles.required}>*</Text>
-          </Text>
-          <TextInput style={[styles.input, styles.flexInput]} />
-        </View>
-
-        <View style={styles.row}>
-          <Text style={styles.label}>
-            Chủ nhiệm đề tài: <Text style={styles.required}>*</Text>
-          </Text>
-          <TextInput style={[styles.input, styles.flexInput]} />
-        </View>
-
-        <View style={styles.row}>
-          <Text style={styles.label}>
-            Người tham gia: <Text style={styles.required}>*</Text>
-          </Text>
-          <TextInput
-            style={[styles.input, styles.flexInput, styles.multiline]}
-            multiline
-          />
-        </View>
-
-        <View style={styles.row}>
-          <Text style={styles.label}>Mô tả:</Text>
-          <TextInput
-            style={[styles.input, styles.flexInput, styles.multiline]}
-            multiline
-          />
-        </View>
-
-        <View style={styles.row}>
-          <Text style={styles.label}>Tài liệu liên quan:</Text>
-          <TouchableOpacity style={styles.uploadButton}>
-            <Icon name="upload" size={20} color="#fff" />
-            <Text style={styles.uploadButtonText}>Tải lên</Text>
-          </TouchableOpacity>
-        </View>
+        {[
+          { key: "ngayBatDau", label: "Ngày bắt đầu" },
+          { key: "ngayKetThuc", label: "Ngày kết thúc" },
+        ].map(({ key, label }) => (
+          <View key={key} style={styles.row}>
+            <Text style={styles.label}>{label}:</Text>
+            <TouchableOpacity
+              style={styles.dateInput}
+              onPress={() => setShowCalendar(key)}
+            >
+              <Text style={styles.dateText}>
+                {topicData[key] || "Chọn ngày"}
+              </Text>
+              <Icon name="calendar" size={20} color="#333" />
+            </TouchableOpacity>
+            {showCalendar === key && (
+              <Calendar
+                onDayPress={(day) => handleDayPress(key, day)}
+                style={styles.calendar}
+              />
+            )}
+          </View>
+        ))}
       </View>
 
-      <TouchableOpacity style={styles.submitButton}>
-        <Text style={styles.submitButtonText}>Đăng ký</Text>
+      <TouchableOpacity
+        style={[styles.submitButton, isSubmitting && styles.disabledButton]}
+        onPress={handleSubmit}
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.submitButtonText}>Đăng ký</Text>
+        )}
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 };
 
-export default DangKyDeTai;
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F2F2F2",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#64B5F6",
-    padding: 25,
-    paddingTop: 60,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "white",
-    marginLeft: 15,
-  },
+  container: { flex: 1, padding: 16, backgroundColor: "#F2F2F2" },
   formContainer: {
     backgroundColor: "#fff",
-    padding: 15,
+    padding: 16,
     borderRadius: 8,
-    marginTop: 10,
-    gap: 22,
+    elevation: 5,
   },
-  row: {
-    flexDirection: "row",
-    alignItems: "flex-start", // Giữ text trên dòng đầu tiên
-    marginTop: 10,
-  },
-  label: {
-    fontSize: 14,
-    flexDirection: "row",
-    fontWeight: "bold",
-    color: "#333",
-    width: 120, // Để giữ khoảng cách đồng đều
-  },
+  row: { marginBottom: 15 },
+  label: { fontSize: 14, fontWeight: "600", marginBottom: 5 },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
+    borderColor: "#ddd",
+    borderRadius: 8,
     padding: 10,
     backgroundColor: "#fff",
+    fontSize: 14,
   },
-  flexInput: {
-    flex: 1, // Giúp input mở rộng hết dòng
-  },
-  multiline: {
-    height: 80,
-    textAlignVertical: "top", // Căn chữ lên đầu
-  },
-  uploadButton: {
+  dateInput: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#7AD530",
+    justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
     padding: 12,
-    borderRadius: 5,
-    marginLeft: 10, // Để tạo khoảng cách với chữ "Tài liệu liên quan",
-    alignItems: "center",
-    justifyContent: "center",
-    width: 150,
+    backgroundColor: "#fff",
   },
-  uploadButtonText: {
-    color: "#fff",
-    marginLeft: 5,
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
+  dateText: { fontSize: 14, color: "#333" },
+  calendar: { borderRadius: 10, elevation: 5 },
   submitButton: {
-    marginTop: 35,
-    backgroundColor: "#64B5F6",
+    backgroundColor: "#007bff",
     padding: 12,
     borderRadius: 8,
     alignItems: "center",
-    alignSelf: "center",
-    width: 200,
+    marginTop: 20,
   },
-  submitButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  required: {
-    color: "red",
-  },
+  disabledButton: { backgroundColor: "#ccc" },
+  submitButtonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
 });
+
+export default DangKyDeTai;
