@@ -10,6 +10,7 @@ import {
 import color from "../utils/color";
 import api from "../utils/api";
 import { AuthContext } from "../context/AuthContext";
+import moment from "moment";
 
 const NotificationScreen = () => {
   const [filter, setFilter] = useState("Gần đây"); // Bộ lọc
@@ -29,7 +30,7 @@ const NotificationScreen = () => {
 
       if (response.data && Array.isArray(response.data.results)) {
         setAllNotifications(response.data.results);
-        setFilteredNotifications(response.data.results); // Mặc định hiển thị tất cả
+        setFilteredNotifications(response.data.results);
       } else {
         throw new Error("Dữ liệu API không hợp lệ");
       }
@@ -53,16 +54,38 @@ const NotificationScreen = () => {
     setShowFilterOptions(false);
 
     if (option === "Chưa đọc") {
-      setFilteredNotifications(allNotifications.filter((n) => n.trangThai === "Chưa đọc"));
+      setFilteredNotifications(allNotifications.filter((n) => n.status === "Chưa đọc"));
     } else if (option === "Đã đọc") {
-      setFilteredNotifications(allNotifications.filter((n) => n.trangThai === "Đã đọc"));
+      setFilteredNotifications(allNotifications.filter((n) => n.status === "Đã đọc"));
     } else {
       setFilteredNotifications(allNotifications); // Hiển thị tất cả
     }
   };
 
-  const toggleNotification = (id) => {
-    setExpandedNotification(expandedNotification === id ? null : id);
+  const toggleNotification = async (notificationId) => {
+    setExpandedNotification(expandedNotification === notificationId ? null : notificationId);
+    try {
+      const notification = filteredNotifications.find(n => n.notification.id === notificationId);
+
+      if (notification.status === "Chưa đọc") {
+        const status = "Đã đọc";
+        await api.put(`/notifications/${notificationId}/read/${user.id}`);
+
+        setFilteredNotifications(prev =>
+          prev.map(n =>
+            n.notification.id === notificationId ? { ...n, status: "Đã đọc" } : n
+          )
+        );
+      }
+
+      setExpandedNotification(expandedNotification === notificationId ? null : notificationId);
+    } catch (error) {
+      console.error("Lỗi khi cập nhật trạng thái thông báo:", error);
+    }
+  };
+
+  const formatDateTime = (isoString) => {
+    return moment(isoString).format("HH:mm:ss - DD/MM/YYYY");
   };
 
   return (
@@ -98,28 +121,28 @@ const NotificationScreen = () => {
       ) : (
         <ScrollView>
           {filteredNotifications.length > 0 ? (
-            filteredNotifications.map((notification) => (
+            filteredNotifications.slice().reverse().map((item) => (
               <TouchableOpacity
-                key={notification.id}
+                key={item.notification.id}
                 style={[
                   styles.notificationItem,
-                  notification.trangThai === "Chưa đọc" ? styles.unread : styles.read,
+                  item.status === "Chưa đọc" ? styles.unread : styles.read,
                 ]}
-                onPress={() => toggleNotification(notification.id)}
+                onPress={() => toggleNotification(item.notification.id)}
               >
-                <Text style={styles.titleText}>{notification.tieuDe}</Text>
-                <Text style={styles.contentText}>{notification.moTa}</Text>
-                <Text style={styles.statusText}>{notification.trangThai}</Text>
+                <Text style={styles.titleText}>{item.notification.tieuDe}</Text>
+                <Text style={styles.contentText}>{item.notification.moTa}</Text>
+                <Text style={styles.statusText}>{item.status}</Text>
 
-                {expandedNotification === notification.id && (
+                {expandedNotification === item.notification.id && (
                   <View
                     style={[
                       styles.detail,
-                      notification.trangThai === "Chưa đọc" ? styles.unread : styles.read,
+                      item.status === "Chưa đọc" ? styles.unread : styles.read,
                     ]}
                   >
                     <Text style={styles.detailText}>
-                      Thời gian: {notification.thoiGian}
+                      Thời gian: {formatDateTime(item.notification.thoiGian)}
                     </Text>
                   </View>
                 )}
