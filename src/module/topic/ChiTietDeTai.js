@@ -1,123 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React from 'react';
+
 import {
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Image,
-} from "react-native";
-import color from "../../utils/color";
-import { useNavigation, useRoute } from "@react-navigation/native";
-const data = {
-  topicName:
-    "NGHIÊN CỨU CÁC VẤN ĐỀ BẢO MẬT VÀ THỬ NGHIỆM CÁC TÍNH NĂNG BẢO MẬT KHI PHÁT TRIỂN MOBILE APP DỰA TRÊN NỀN TẢNG NATIVE REACT VÀ KOTLIN.",
-  projectManager: "Hoàng Thị Thảo",
-  lecturerGuide: "Trần Trung",
-  department: "Công nghệ thông tin",
-  status: "Chờ duyệt",
-  time: "15/12/2024 - 3/5/2025",
-  field: "Phát triển Mobile App",
-  member: 5,
-};
+} from 'react-native';
 
-const tasksct = [
-  {
-    title: "Nhiệm vụ 1",
-    summary: "Xây dựng giao diện quản lý sinh viên",
-    description:
-      "Thiết kế màn hình đăng nhập, chi tiết đề tài, danh sách đề tài",
-    startDay: "20-12-2025",
-    endDay: "20-12-2025",
-    members: [
-      {
-        img: require("../../../src/data/imgs/Quynh.png"),
-        name: "Quỳnh",
-      },
-      { img: require("../../../src/data/imgs/Trien.png"), name: "Triển" },
-    ],
-    status: "To do",
-  },
-  {
-    title: "Nhiệm vụ 2",
-    summary: "Xây dựng giao diện quản lý sinh viên",
-    description:
-      "Thiết kế màn hình đăng nhập, chi tiết đề tài, danh sách đề tài",
-    startDay: "20-12-2025",
-    endDay: "20-12-2025",
-    members: [
-      { img: require("../../../src/data/imgs/Viet.png"), name: "Việt" },
-      { img: require("../../../src/data/imgs/Trien.png"), name: "Triển" },
-    ],
-    status: "In progress",
-  },
-  {
-    title: "Nhiệm vụ 3",
-    summary: "Xây dựng giao diện quản lý giảng viên",
-    description:
-      "Thiết kế màn hình đăng nhập, trang chủ, thông tin cá nhân, chi tiết đề tài, danh sách đề tài",
-    startDay: "20-12-2025",
-    endDay: "20-12-2025",
-    members: [
-      { img: require("../../../src/data/imgs/Quynh.png"), name: "Quỳnh" },
-      { img: require("../../../src/data/imgs/Viet.png"), name: "Việt" },
-    ],
-    status: "To do",
-  },
-  {
-    title: "Nhiệm vụ 3",
-    summary: "Xây dựng giao diện quản lý giảng viên",
-    description:
-      "Thiết kế màn hình đăng nhập, trang chủ, thông tin cá nhân, chi tiết đề tài, danh sách đề tài",
-    startDay: "20-12-2025",
-    endDay: "20-12-2025",
-    members: [
-      { img: require("../../../src/data/imgs/Quynh.png"), name: "Quỳnh" },
-      { img: require("../../../src/data/imgs/Viet.png"), name: "Việt" },
-    ],
-    status: "To do",
-  },
-  {
-    title: "Nhiệm vụ 3",
-    summary: "Xây dựng giao diện quản lý giảng viên",
-    description:
-      "Thiết kế màn hình đăng nhập, trang chủ, thông tin cá nhân, chi tiết đề tài, danh sách đề tài",
-    startDay: "20-12-2025",
-    endDay: "20-12-2025",
-    members: [
-      { img: require("../../../src/data/imgs/Quynh.png"), name: "Quỳnh" },
-      { img: require("../../../src/data/imgs/Viet.png"), name: "Việt" },
-    ],
-    status: "Done",
-  },
-];
-// const tasks = [
-//   {
-//     id: 1,
-//     name: "Nhiệm vụ 1",
-//   },
-//   {
-//     id: 2,
-//     name: "Nhiệm vụ 2",
-//   },
-//   {
-//     id: 3,
-//     name: "Nhiệm vụ 3",
-//   },
-//   {
-//     id: 4,
-//     name: "Nhiệm vụ 4",
-//   },
-// ];
+import { Ionicons } from '@expo/vector-icons';
+import {
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 
-const mockTask = {
-  title: "Thiết kế UI",
-  summary: "Thiết kế giao diện màn hình chính",
-  description: "Cần hoàn thành wireframe và prototype trước thứ 6",
-  startDay: "2025-02-26",
-  endDay: "2025-03-05",
-  members: [{ name: "Nguyễn Văn A" }, { name: "Trần Thị B" }],
-};
+import color from '../../utils/color';
 
 const ChiTietDeTai = () => {
   const { params } = useRoute();

@@ -19,14 +19,15 @@
     "@react-navigation/drawer": "^7.1.1",
     "@react-navigation/native": "^7.0.19",
     "@react-navigation/stack": "^7.1.1",
-    "axios": "^1.8.2",
+    "axios": "^1.8.4",
     "expo": "~52.0.36",
-    "expo-document-picker": "^13.0.3",
+    "expo-document-picker": "~13.0.3",
     "expo-linear-gradient": "^14.0.2",
     "expo-status-bar": "~2.0.1",
     "react": "18.3.1",
     "react-native": "0.76.7",
     "react-native-calendars": "^1.1310.0",
+    "react-native-document-picker": "^9.3.1",
     "react-native-dropdown-picker": "^5.4.6",
     "react-native-gesture-handler": "~2.20.2",
     "react-native-keyboard-aware-scroll-view": "^0.9.5",
@@ -40,7 +41,8 @@
     "trenlop": "file:"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
+    "@babel/core": "^7.20.0",
+    "@react-native-community/cli": "^18.0.0"
   },
   "private": true
 }

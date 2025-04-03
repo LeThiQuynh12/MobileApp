@@ -1,18 +1,21 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
+
 import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  Alert,
-  ScrollView,
-  ActivityIndicator,
-} from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import { postTopicList } from "../../context/fetchData";
-import { Calendar } from "react-native-calendars";
-import Icon from "react-native-vector-icons/FontAwesome";
+} from 'react-native';
+import { Calendar } from 'react-native-calendars';
+import Icon from 'react-native-vector-icons/FontAwesome';
+
+import { useNavigation } from '@react-navigation/native';
+
+import { postTopicList } from '../../context/fetchData';
 
 const DangKyDeTai = () => {
   const navigation = useNavigation();
@@ -173,4 +176,6 @@ const styles = StyleSheet.create({
   submitButtonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
 });
 
+
 export default DangKyDeTai;
+

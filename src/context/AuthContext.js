@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
   // 📌 Lấy user từ AsyncStorage
   const loadUserFromStorage = async () => {
     const userData = await AsyncStorage.getItem("user");
-    console.log("userData: ", userData);
+    // console.log("userData: ", userData);
     if (userData) {
       setUser(JSON.parse(userData));
     }
