@@ -28,6 +28,7 @@ import SuaCongViec from "../screens/(Admin)/SuaCongViec";
 import SuaDeTai from "../screens/(Admin)/SuaDeTai";
 import ThongBao from "../screens/(Admin)/ThongBao";
 import TrangChuAdmin from "../screens/(Admin)/TrangChuAdmin";
+import ThemThongBao from "../module/notification/ThemThongBao";
 import color from "../utils/color";
 import DangKyDeTai from "../module/topic/DangKyDeTai";
 
@@ -351,6 +352,9 @@ function NotificationScreen() {
         headerLeft: () => (
           <HeaderLeft title="Thông Báo" navigation={navigation} />
         ),
+        headerRight: () => (
+          <HeaderPlusIcon navigation={navigation} destination="ThemThongBao" />
+        )
       })}
     >
       <Stack.Screen
@@ -358,6 +362,23 @@ function NotificationScreen() {
         component={ThongBao}
         options={{
           title: "Thông Báo",
+        }}
+      />
+      <Stack.Screen
+        name="ThemThongBao"
+        component={ThemThongBao}
+        options={{
+          headerShown: false,
+          headerTitle: "Thêm thông báo", // Thêm lại tiêu đề\
+          headerStyle: {
+            backgroundColor: color.mainColor, // Màu xanh cho header
+          },
+          headerTitleStyle: {
+            fontSize: 18,
+          },
+          headerShown: false,
+          headerTintColor: color.white, // Màu chữ trắng để dễ đọc
+          headerLeft: () => <BackButton />, // Thay menu bằng nút quay lại
         }}
       />
     </Stack.Navigator>

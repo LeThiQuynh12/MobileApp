@@ -1,160 +1,197 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Modal } from 'react-native';
+import { React, useState, useEffect } from "react";
+import {
+  Alert,
+  FlatList,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+  View,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import api from "../../utils/api";
+import color from "../../utils/color"; // Đảm bảo file này có màu `darkBlue`
 
-const ThongBao = () => {
-  const [notifications, setNotifications] = useState([
-    { id: 1, title: 'Lịch họp admin', content: 'Lịch họp của các admin vào lúc 10h sáng.', read: false, important: true },
-    { id: 2, title: 'Cập nhật hệ thống', content: 'Hệ thống đã được cập nhật vào 3h chiều qua.', read: true, important: false },
-    { id: 3, title: 'Quy định mới', content: 'Có quy định mới về việc quản lý người dùng.', read: false, important: true },
-    { id: 4, title: 'Thông báo bảo trì', content: 'Hệ thống sẽ bảo trì vào cuối tuần này.', read: false, important: false },
-    { id: 5, title: 'Cập nhật tài liệu', content: 'Tài liệu hướng dẫn cập nhật đã có phiên bản mới.', read: true, important: true },
-  ]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterRead, setFilterRead] = useState('');
-  const [filterImportant, setFilterImportant] = useState('');
-  const [modalVisible, setModalVisible] = useState(false);
-
-  // Lọc thông báo theo các điều kiện
-  const filteredNotifications = notifications.filter(notification => {
-    const matchesSearch = notification.title.includes(searchTerm) || notification.content.includes(searchTerm);
-    const matchesRead = filterRead === '' || (filterRead === 'read' ? notification.read : !notification.read);
-    const matchesImportant = filterImportant === '' || notification.important === (filterImportant === 'important');
-    return matchesSearch && matchesRead && matchesImportant;
-  });
-
-  // Chuyển đổi trạng thái đọc của thông báo
-  const toggleRead = (id) => {
-    setNotifications(notifications.map(notification =>
-      notification.id === id ? { ...notification, read: !notification.read } : notification
-    ));
-  };
-
-  // Hiển thị modal lọc
-  const handleFilterOption = (option) => {
-    if (option === 'read' || option === 'unread') {
-      setFilterRead(option);
-    } else if (option === 'important' || option === 'not-important') {
-      setFilterImportant(option);
-    }
-    setModalVisible(false); 
-  };
-
-  // Hủy bộ lọc và quay lại trạng thái ban đầu
-  const clearFilters = () => {
-    setFilterRead('');
-    setFilterImportant('');
-    setModalVisible(false); 
+const NotificationCard = ({ notification, onDelete }) => {
+  const handleDelete = () => {
+    Alert.alert("Xác nhận xóa", "Bạn có chắc chắn muốn xóa thông báo này?", [
+      { text: "Hủy", style: "cancel" },
+      {
+        text: "Xóa",
+        onPress: () => onDelete(notification.id), // Gọi hàm xóa
+        style: "destructive",
+      },
+    ]);
   };
 
   return (
+    <View style={styles.card}>
+      <Text style={styles.cardInfo}>
+        <Text style={styles.label}>Tiêu đề:</Text> {notification.tieuDe}
+      </Text>
+      <Text style={styles.cardInfo}>
+        <Text style={styles.label}>Mô tả:</Text> {notification.moTa}
+      </Text>
+      <Text style={styles.cardInfo}>
+        <Text style={styles.label}>Thời gian:</Text> {new Date(notification.thoiGian).toLocaleString()}
+      </Text>
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+          <Text style={styles.buttonText}>Xóa</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+const QuanLyThongBao = () => {
+  const navigation = useNavigation();
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchText, setSearchText] = useState("");
+
+  const fetchNotifications = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await api.get("/notifications");
+      setNotifications(response.data.results || []);
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+      setError("Không thể tải thông báo, vui lòng thử lại!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteNotification = async (id) => {
+    try {
+      await api.delete(`/notifications/${id}`);
+      setNotifications((prev) => prev.filter((notif) => notif.id !== id));
+      Alert.alert("Thành công", "Thông báo đã được xóa.");
+    } catch (error) {
+      console.error("Lỗi khi xóa thông báo:", error);
+      Alert.alert("Lỗi", "Xóa thông báo thất bại. Vui lòng thử lại.");
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  return (
     <View style={styles.container}>
-      {/* Thanh tìm kiếm */}
-      <TextInput
-        style={styles.input}
-        placeholder="Tìm kiếm thông báo..."
-        value={searchTerm}
-        onChangeText={(text) => setSearchTerm(text)}
-      />
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={18} color="#888" style={styles.searchIcon} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Tìm kiếm thông báo..."
+          placeholderTextColor="#999"
+          onChangeText={(text) => setSearchText(text)}
+          value={searchText}
+        />
+      </View>
 
-      {/* Nút Lọc */}
-      <TouchableOpacity style={styles.filterButton} onPress={() => setModalVisible(true)}>
-        <Text style={styles.filterText}>Lọc</Text>
-      </TouchableOpacity>
-
-      {/* Modal lọc */}
-      <Modal
-        visible={modalVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <TouchableOpacity style={styles.modalOption} onPress={() => handleFilterOption('read')}>
-              <Text style={styles.modalText}>Đã đọc</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.modalOption} onPress={() => handleFilterOption('unread')}>
-              <Text style={styles.modalText}>Chưa đọc</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.modalOption} onPress={() => handleFilterOption('important')}>
-              <Text style={styles.modalText}>Quan trọng</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.modalOption} onPress={() => handleFilterOption('not-important')}>
-              <Text style={styles.modalText}>Không quan trọng</Text>
-            </TouchableOpacity>
-
-            {/* Nút Hủy */}
-            <TouchableOpacity style={styles.modalCancelButton} onPress={clearFilters}>
-              <Text style={styles.modalCancelText}>Hủy</Text>
-            </TouchableOpacity>
-          </View>
+      {loading ? (
+        <ActivityIndicator size="large" color={color.darkBlue} />
+      ) : error ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={fetchNotifications}>
+            <Text style={styles.buttonText}>Thử lại</Text>
+          </TouchableOpacity>
         </View>
-      </Modal>
-
-      {/* Hiển thị danh sách thông báo */}
-      {filteredNotifications.length === 0 ? (
-        <Text style={styles.noNotifications}>Không có thông báo phù hợp.</Text>
       ) : (
         <FlatList
-          data={filteredNotifications}
+          data={notifications.slice().reverse().filter((notif) => {
+            const tieuDe = notif.tieuDe || "";
+            return tieuDe.toLowerCase().includes(searchText.toLowerCase());
+          })}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
-            <View
-              style={[
-                styles.notificationContainer,
-                { backgroundColor: item.read ? '#f9f9f9' : '#e3f7e5' }
-              ]}
-            >
-              <Text style={styles.title}>
-                {item.title}
-                {item.important && <Text style={styles.important}> ⭐</Text>}
-                {!item.read && <Text style={styles.unread}> •</Text>}
-              </Text>
-              <Text>{item.content}</Text>
-              <TouchableOpacity onPress={() => toggleRead(item.id)}>
-                <Text style={styles.toggleButton}>
-                  {item.read ? 'Đánh dấu chưa đọc' : 'Đánh dấu đã đọc'}
-                </Text>
-              </TouchableOpacity>
-            </View>
+            <NotificationCard notification={item} onDelete={handleDeleteNotification} />
           )}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          showsVerticalScrollIndicator={false}
         />
       )}
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  input: { height: 40, borderColor: '#ccc', borderWidth: 1, borderRadius: 8, paddingLeft: 10, marginBottom: 20 },
-  filterButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    backgroundColor: '#4CAF50', 
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  filterText: { color: '#fff', fontSize: 16 },
-  modalOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' },
-  modalContainer: { width: '80%', backgroundColor: '#fff', borderRadius: 8, padding: 20 },
-  modalOption: { paddingVertical: 10, width: '100%', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#ddd' },
-  modalText: { fontSize: 16 },
-  modalCancelButton: {
-    marginTop: 20,
-    paddingVertical: 10,
-    backgroundColor: '#FF5722', 
-    borderRadius: 5,
-    width: '100%',
-    alignItems: 'center',
-  },
-  modalCancelText: { color: '#fff', fontSize: 16 },
-  notificationContainer: { padding: 10, marginBottom: 10, borderWidth: 1, borderColor: '#ccc', borderRadius: 5 },
-  title: { fontWeight: 'bold' },
-  important: { color: 'gold' },
-  unread: { color: 'red' },
-  toggleButton: { color: 'blue', marginTop: 10 },
-  noNotifications: { fontSize: 16, color: 'gray', textAlign: 'center' },
-});
+export default QuanLyThongBao;
 
-export default ThongBao;
+const styles = {
+  container: {
+    flex: 1,
+    backgroundColor: "#F2F2F2",
+    padding: 10,
+  },
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    padding: 5,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    elevation: 3,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
+    color: "#333",
+    fontSize: 16,
+  },
+  errorContainer: {
+    alignItems: "center",
+    marginTop: 20,
+  },
+  errorText: {
+    color: "red",
+    fontSize: 16,
+  },
+  retryButton: {
+    backgroundColor: "#FF6B60",
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 14,
+    marginVertical: 8,
+    elevation: 4,
+  },
+  cardInfo: {
+    fontSize: 14,
+    color: "#333",
+    marginBottom: 4,
+  },
+  label: {
+    fontWeight: "bold",
+    color: "#333",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 10,
+  },
+  deleteButton: {
+    backgroundColor: "#FF6B60",
+    padding: 10,
+    borderRadius: 5,
+    width: 100,
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+};

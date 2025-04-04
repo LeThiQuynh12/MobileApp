@@ -190,12 +190,18 @@ const ThemNguoiDung = () => {
         phoneNumber,
         gender,
         password,
-        role: selectedRole === 'ad' ? 'ADMIN' : selectedRole === 'sv' ? 'USER' : 'LECTURER',
+        role: selectedRole === 'ad' ? 'ADMIN' : selectedRole === 'sv' ? 'STUDENT' : 'LECTURER',
         avatarUrl: image && image.uri ? image.uri : null,
       };
       console.log('Sending new user:', newUser);
-
-      const response = await api.post('/users', newUser);
+      if (newUser.role === 'ADMIN')
+        var response = await api.post('/users', newUser);
+      else
+        if (newUser.role === 'STUDENT') {
+          var response = await api.post('/students', newUser);
+        }
+        else
+          var response = await api.post('/lecturers', newUser);
 
       if (response.status === 201 || response.status === 200) {
         alert('Thêm mới thành công!');

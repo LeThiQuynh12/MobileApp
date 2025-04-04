@@ -11,7 +11,6 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import DropDownPicker from "react-native-dropdown-picker";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import color from "../../utils/color";
@@ -30,14 +29,6 @@ const SuaNguoiDung = ({ route }) => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [gender, setGender] = useState("");
   const [password, setPassword] = useState("");
-  const [selectedRole, setSelectedRole] = useState("");
-
-  const [openRole, setOpenRole] = useState(false);
-  const [roles, setRoles] = useState([
-    { label: "Giảng viên", value: "gv" },
-    { label: "Sinh viên", value: "sv" },
-    { label: "Admin", value: "ad" },
-  ]);
 
   // Set dữ liệu khi mở form
   useEffect(() => {
@@ -47,9 +38,6 @@ const SuaNguoiDung = ({ route }) => {
       setEmail(user.email || "");
       setPhoneNumber(user.phoneNumber || "");
       setGender(user.gender || "");
-      setSelectedRole(
-        user.role === "ADMIN" ? "ad" : user.role === "USER" ? "sv" : "gv"
-      );
     }
   }, [user]);
 
@@ -138,7 +126,6 @@ const SuaNguoiDung = ({ route }) => {
         email,
         phoneNumber,
         gender,
-        role: selectedRole === "ad" ? "ADMIN" : selectedRole === "sv" ? "USER" : "TEACHER",
       };
 
       if (password.trim() !== "") {
@@ -147,7 +134,6 @@ const SuaNguoiDung = ({ route }) => {
         updatedUser.password = password;
       }
 
-      console.log("call api");
       const response = await api.put(`/users/${id}`, updatedUser);
       if (response.status === 200) {
         alert("Cập nhật thành công!");
@@ -246,22 +232,6 @@ const SuaNguoiDung = ({ route }) => {
                 />
               </View>
               {validation.password.error === '' ? '' : <Text style={styles.error}>{validation.password.error}</Text>}
-
-              <View style={styles.row}>
-                <Text style={styles.label}>Vai trò:</Text>
-                <View style={styles.dropdownWrapper}>
-                  <DropDownPicker
-                    open={openRole}
-                    value={selectedRole}
-                    items={roles}
-                    setOpen={setOpenRole}
-                    setValue={setSelectedRole}
-                    setItems={setRoles}
-                    style={styles.dropdown}
-                    dropDownContainerStyle={styles.dropdownContainer}
-                  />
-                </View>
-              </View>
             </View>
 
             <TouchableOpacity style={styles.submitButton} onPress={handleUpdate}>
