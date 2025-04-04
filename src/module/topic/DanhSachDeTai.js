@@ -44,13 +44,16 @@ const TopicCard = ({ topic }) => {
       <View style={styles.cardRow}>
         <Ionicons name="person-outline" size={18} color="#555" />
         <Text style={styles.cardInfo}>
-          Người hướng dẫn: {formatHocVi(topic.hocVi)} {topic.tenGiangVien}
+          Người hướng dẫn: {formatHocVi(topic.lecturer.academicTitle)}
+          {topic.lecturer.user.fullName}
         </Text>
       </View>
 
       <View style={styles.cardRow}>
         <Ionicons name="people-outline" size={18} color="#555" />
-        <Text style={styles.cardInfo}>Chủ nhiệm: {topic.tenSinhVien}</Text>
+        <Text style={styles.cardInfo}>
+          Chủ nhiệm: {topic.group.leader.user.fullName}
+        </Text>
       </View>
 
       <View style={styles.cardRow}>
@@ -91,6 +94,7 @@ const DanhSachDeTai = () => {
         setLoading(true);
         const response = await api.get("/topics");
         setTopics(response.data.results);
+        console.log("de tai:", response.data.results);
       } catch (err) {
         console.error("Fetch error:", err);
         setError(err.message);

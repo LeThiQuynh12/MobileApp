@@ -29,6 +29,7 @@ import SuaDeTai from "../screens/(Admin)/SuaDeTai";
 import ThongBao from "../screens/(Admin)/ThongBao";
 import TrangChuAdmin from "../screens/(Admin)/TrangChuAdmin";
 import color from "../utils/color";
+import DangKyDeTai from "../module/topic/DangKyDeTai";
 
 // 🏠 Các màn hình quản lý Admin
 function AdminHomeScreen() {
@@ -157,9 +158,18 @@ function TopicManagementScreen() {
       />
       <Stack.Screen
         name="ThemDeTai"
-        component={ThemDeTai}
+        component={DangKyDeTai}
         options={{
-          headerShown: false,
+          headerTitle: "Đăng ký đề tài", // Thêm lại tiêu đề\
+          headerStyle: {
+            backgroundColor: color.mainColor, // Màu xanh cho header
+          },
+          headerTitleStyle: {
+            fontSize: 18,
+          },
+          headerTintColor: color.white, // Màu chữ trắng để dễ đọc
+          headerLeft: () => <BackButton />, // Thay menu bằng nút quay lại
+          headerRight: "",
         }}
       />
       <Stack.Screen

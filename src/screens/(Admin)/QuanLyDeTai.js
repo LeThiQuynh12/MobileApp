@@ -11,7 +11,7 @@ import {
 import Icon from "react-native-vector-icons/FontAwesome";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { fetchGetTopicList, deleteTopic } from "../../context/fetchData";
+import api from "../../utils/api";
 
 const TopicCard = ({ topic, onDeleteSuccess }) => {
   const navigation = useNavigation();
@@ -23,7 +23,7 @@ const TopicCard = ({ topic, onDeleteSuccess }) => {
     return hocVi;
   };
 
-  const handleDeleteTopic = async () => {
+  const handleDeleteTopic = async (topicId) => {
     Alert.alert(
       "Xác nhận xóa",
       `Bạn có chắc muốn xóa đề tài "${topic.tenDeTai}"?`,
@@ -36,11 +36,16 @@ const TopicCard = ({ topic, onDeleteSuccess }) => {
           text: "Xóa",
           onPress: async () => {
             try {
-              await deleteTopic(topic.id);
+              // Sử dụng topicId để gọi API xóa đề tài
+              await api.delete(`/topics/${topicId}`);
+
               Alert.alert("Thành công", "Đã xóa đề tài thành công");
               onDeleteSuccess();
             } catch (error) {
-              Alert.alert("Lỗi", "Không thể xóa đề tài: " + error.message);
+              Alert.alert(
+                "Lỗi",
+                "Không thể xóa đề tài: " + (error?.message || "Có lỗi xảy ra")
+              );
             }
           },
           style: "destructive",
@@ -69,13 +74,16 @@ const TopicCard = ({ topic, onDeleteSuccess }) => {
       <View style={styles.cardRow}>
         <Ionicons name="person-outline" size={18} color="#555" />
         <Text style={styles.cardInfo}>
-          Người hướng dẫn: {formatHocVi(topic.hocVi)} {topic.tenGiangVien}
+          Người hướng dẫn: {formatHocVi(topic.lecturer.academicTitle)}
+          {topic.lecturer.user.fullName}
         </Text>
       </View>
 
       <View style={styles.cardRow}>
         <Ionicons name="people-outline" size={18} color="#555" />
-        <Text style={styles.cardInfo}>Chủ nhiệm: {topic.tenSinhVien}</Text>
+        <Text style={styles.cardInfo}>
+          Chủ nhiệm: {topic.group.leader.user.fullName}
+        </Text>
       </View>
 
       <View style={styles.cardRow}>
@@ -100,7 +108,10 @@ const TopicCard = ({ topic, onDeleteSuccess }) => {
           <Ionicons name="pencil" size={30} color="#66BB6A" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.iconButton} onPress={handleDeleteTopic}>
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => handleDeleteTopic(topic.id)} // Truyền ID của đề tài vào
+        >
           <Ionicons name="trash" size={30} color="#FF6B60" />
         </TouchableOpacity>
       </View>
@@ -111,27 +122,42 @@ const TopicCard = ({ topic, onDeleteSuccess }) => {
 const QuanLyDeTai = () => {
   const [searchText, setSearchText] = useState("");
   const [topics, setTopics] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null); // Added error state
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get("/topics");
+        setTopics(response.data.results);
+        //console.log("de tai:", response.data.results);
+      } catch (err) {
+        console.error("Fetch error:", err);
+        setError("Không thể tải dữ liệu. Vui lòng thử lại!");
+        setTopics([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const loadTopics = async () => {
     try {
-      const data = await fetchGetTopicList();
-      console.log("DS de tai:", data);
-      setTopics(data);
+      const response = await api.get("/topics");
+      setTopics(response.data.results);
     } catch (error) {
-      Alert.alert("Lỗi", "Không thể tải danh sách đề tài: " + error.message);
+      Alert.alert("Lỗi", "Không thể tải lại danh sách đề tài");
     }
   };
-
-  useEffect(() => {
-    loadTopics();
-  }, []);
 
   const filteredTopics = topics.filter(
     (topic) =>
       topic.tenDeTai.toLowerCase().includes(searchText.toLowerCase()) ||
       topic.khoa.toLowerCase().includes(searchText.toLowerCase()) ||
-      topic.linhVucNghienCuu.toLowerCase().includes(searchText.toLowerCase()) ||
-      topic.idSinhVien.toLowerCase().includes(searchText.toLowerCase())
+      topic.linhVucNghienCuu.toLowerCase().includes(searchText.toLowerCase())
   );
 
   return (
@@ -151,15 +177,29 @@ const QuanLyDeTai = () => {
           onChangeText={setSearchText}
         />
       </View>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {filteredTopics.map((topic, index) => (
-          <TopicCard key={index} topic={topic} onDeleteSuccess={loadTopics} />
-        ))}
-      </ScrollView>
+
+      {loading ? (
+        <Text>Đang tải dữ liệu...</Text>
+      ) : error ? (
+        <Text>{error}</Text>
+      ) : (
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {filteredTopics.length > 0 ? (
+            filteredTopics.map((topic, index) => (
+              <TopicCard
+                key={index}
+                topic={topic}
+                onDeleteSuccess={loadTopics}
+              />
+            ))
+          ) : (
+            <Text>Không tìm thấy đề tài nào!</Text>
+          )}
+        </ScrollView>
+      )}
     </View>
   );
 };
-
 export default QuanLyDeTai;
 
 const styles = StyleSheet.create({
