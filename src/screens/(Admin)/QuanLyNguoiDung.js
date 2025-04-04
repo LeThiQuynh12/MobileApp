@@ -22,12 +22,13 @@ const QuanLyNguoiDung = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchText, setSearchText] = useState("");
+
   const fetchUser = async () => {
     try {
       setLoading(true);
       const response = await api.get(`/users`);
       setUsers(response.data.results || []);
-      console.log(users);
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error);
       setError("Không thể tải thông tin người dùng, vui lòng thử lại!");
@@ -68,6 +69,10 @@ const QuanLyNguoiDung = () => {
     ]);
   };
 
+  const filteredUsers = users.filter(user =>
+    user.fullName.toLowerCase().includes(searchText.toLowerCase())
+  );
+
   return (
     <View style={styles.container}>
       <View style={styles.searchContainer}>
@@ -76,6 +81,8 @@ const QuanLyNguoiDung = () => {
           placeholder="Tìm kiếm người dùng"
           placeholderTextColor="#64B5F6"
           style={styles.searchInput}
+          value={searchText}
+          onChangeText={setSearchText}
         />
       </View>
       {loading ? (
@@ -84,7 +91,7 @@ const QuanLyNguoiDung = () => {
         <Text style={{ color: "red", textAlign: "center" }}>{error}</Text>
       ) : (
         <FlatList
-          data={users}
+          data={filteredUsers}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <View style={styles.card}>
