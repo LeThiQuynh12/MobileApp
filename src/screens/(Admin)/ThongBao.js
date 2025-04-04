@@ -1,4 +1,4 @@
-import { React, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Alert,
   FlatList,
@@ -11,7 +11,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import api from "../../utils/api";
-import color from "../../utils/color"; // Đảm bảo file này có màu `darkBlue`
+import color from "../../utils/color";
 
 const NotificationCard = ({ notification, onDelete }) => {
   const handleDelete = () => {
@@ -19,7 +19,7 @@ const NotificationCard = ({ notification, onDelete }) => {
       { text: "Hủy", style: "cancel" },
       {
         text: "Xóa",
-        onPress: () => onDelete(notification.id), // Gọi hàm xóa
+        onPress: () => onDelete(notification.id),
         style: "destructive",
       },
     ]);
@@ -34,9 +34,9 @@ const NotificationCard = ({ notification, onDelete }) => {
         <Text style={styles.label}>Mô tả:</Text> {notification.moTa}
       </Text>
       <Text style={styles.cardInfo}>
-        <Text style={styles.label}>Thời gian:</Text> {new Date(notification.thoiGian).toLocaleString()}
+        <Text style={styles.label}>Thời gian:</Text>{" "}
+        {new Date(notification.thoiGian).toLocaleString()}
       </Text>
-
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
           <Text style={styles.buttonText}>Xóa</Text>
@@ -50,20 +50,43 @@ const QuanLyThongBao = () => {
   const navigation = useNavigation();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
   const [searchText, setSearchText] = useState("");
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = async (pageNum, isLoadMore = false) => {
     try {
-      setLoading(true);
+      if (isLoadMore) setLoadingMore(true);
+      else setLoading(true);
+
       setError(null);
-      const response = await api.get("/notifications");
-      setNotifications(response.data.results || []);
+      const response = await api.get("/notifications/split", {
+        params: { page: pageNum, size: 5 },
+      });
+
+      console.log('response:', response);
+      console.log('response.data:', response.data);
+
+      const newData = response.data.results.content || [];
+      console.log('newData:', newData);
+
+      const totalPages = response.data.results.totalPages || 0;
+
+      if (isLoadMore) {
+        setNotifications((prev) => [...prev, ...newData]);
+      } else {
+        setNotifications(newData);
+      }
+
+      setHasMore(pageNum < totalPages - 1);
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error);
       setError("Không thể tải thông báo, vui lòng thử lại!");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -79,8 +102,21 @@ const QuanLyThongBao = () => {
   };
 
   useEffect(() => {
-    fetchNotifications();
+    fetchNotifications(0);
   }, []);
+
+  const loadMore = () => {
+    if (!loadingMore && hasMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchNotifications(nextPage, true);
+    }
+  };
+
+  const filteredNotifications = notifications.filter((notif) => {
+    const tieuDe = notif.tieuDe || "";
+    return tieuDe.toLowerCase().includes(searchText.toLowerCase());
+  });
 
   return (
     <View style={styles.container}>
@@ -95,27 +131,31 @@ const QuanLyThongBao = () => {
         />
       </View>
 
-      {loading ? (
+      {loading && page === 0 ? (
         <ActivityIndicator size="large" color={color.darkBlue} />
       ) : error ? (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={fetchNotifications}>
+          <TouchableOpacity style={styles.retryButton} onPress={() => fetchNotifications(0)}>
             <Text style={styles.buttonText}>Thử lại</Text>
           </TouchableOpacity>
         </View>
       ) : (
         <FlatList
-          data={notifications.slice().reverse().filter((notif) => {
-            const tieuDe = notif.tieuDe || "";
-            return tieuDe.toLowerCase().includes(searchText.toLowerCase());
-          })}
+          data={filteredNotifications}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <NotificationCard notification={item} onDelete={handleDeleteNotification} />
           )}
           contentContainerStyle={{ paddingBottom: 20 }}
           showsVerticalScrollIndicator={false}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.1}
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator size="small" color={color.darkBlue} style={{ marginVertical: 10 }} />
+            ) : null
+          }
         />
       )}
     </View>

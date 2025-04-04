@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  ScrollView,
+  FlatList,
 } from "react-native";
 import color from "../utils/color";
 import api from "../utils/api";
@@ -19,32 +19,50 @@ const NotificationScreen = () => {
   const [allNotifications, setAllNotifications] = useState([]); // Dữ liệu gốc
   const [filteredNotifications, setFilteredNotifications] = useState([]); // Dữ liệu sau lọc
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
   const { user } = useContext(AuthContext);
 
   // 🛠 GET danh sách thông báo từ API
-  const fetchNotifications = async (userId) => {
+  const fetchNotifications = async (userId, pageNum, isLoadMore = false) => {
     try {
-      setLoading(true);
-      const response = await api.get(`/notifications/user/${userId}`);
+      if (isLoadMore) setLoadingMore(true);
+      else setLoading(true);
 
-      if (response.data && Array.isArray(response.data.results)) {
-        setAllNotifications(response.data.results);
-        setFilteredNotifications(response.data.results);
+      setError(null);
+      const response = await api.get(`/notifications/user/${userId}`, {
+        params: { page: pageNum, size: 5 },
+      });
+
+      if (response.data && Array.isArray(response.data.results.content)) {
+        const newData = response.data.results.content;
+        const totalPages = response.data.results.totalPages || 0;
+
+        if (isLoadMore) {
+          setAllNotifications((prev) => [...prev, ...newData]);
+          setFilteredNotifications((prev) => [...prev, ...newData]);
+        } else {
+          setAllNotifications(newData);
+          setFilteredNotifications(newData);
+        }
+
+        setHasMore(pageNum < totalPages - 1);
       } else {
         throw new Error("Dữ liệu API không hợp lệ");
       }
     } catch (error) {
-      console.error("Lỗi khi lấy dữ liệu:", error);
       setError("Không thể tải thông báo, vui lòng thử lại!");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
   useEffect(() => {
     if (user) {
-      fetchNotifications(user.id);
+      fetchNotifications(user.id, 0);
     }
   }, [user]);
 
@@ -58,35 +76,66 @@ const NotificationScreen = () => {
     } else if (option === "Đã đọc") {
       setFilteredNotifications(allNotifications.filter((n) => n.status === "Đã đọc"));
     } else {
-      setFilteredNotifications(allNotifications); // Hiển thị tất cả
+      setFilteredNotifications([...allNotifications]); // Sao chép mảng để tránh tham chiếu
     }
   };
 
   const toggleNotification = async (notificationId) => {
     setExpandedNotification(expandedNotification === notificationId ? null : notificationId);
     try {
-      const notification = filteredNotifications.find(n => n.notification.id === notificationId);
+      const notification = filteredNotifications.find((n) => n.notification.id === notificationId);
 
       if (notification.status === "Chưa đọc") {
-        const status = "Đã đọc";
         await api.put(`/notifications/${notificationId}/read/${user.id}`);
-
-        setFilteredNotifications(prev =>
-          prev.map(n =>
-            n.notification.id === notificationId ? { ...n, status: "Đã đọc" } : n
-          )
+        const updatedNotifications = allNotifications.map((n) =>
+          n.notification.id === notificationId ? { ...n, status: "Đã đọc" } : n
         );
+        setAllNotifications(updatedNotifications);
+        setFilteredNotifications(updatedNotifications);
       }
-
-      setExpandedNotification(expandedNotification === notificationId ? null : notificationId);
     } catch (error) {
       console.error("Lỗi khi cập nhật trạng thái thông báo:", error);
+    }
+  };
+
+  const loadMore = () => {
+    if (!loadingMore && hasMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchNotifications(user.id, nextPage, true);
     }
   };
 
   const formatDateTime = (isoString) => {
     return moment(isoString).format("HH:mm:ss - DD/MM/YYYY");
   };
+
+  const renderNotification = ({ item }) => (
+    <TouchableOpacity
+      style={[
+        styles.notificationItem,
+        item.status === "Chưa đọc" ? styles.unread : styles.read,
+      ]}
+      onPress={() => toggleNotification(item.notification.id)}
+    >
+      <Text style={styles.titleText}>{item.notification.tieuDe}</Text>
+      <Text style={styles.contentText}>{item.notification.moTa}</Text>
+      <Text style={styles.statusText}>{item.status}</Text>
+
+      {expandedNotification === item.notification.id && (
+        <View
+          style={[
+            styles.detail,
+            item.status === "Chưa đọc" ? styles.unread : styles.read,
+          ]}
+        >
+          <Text style={styles.detailText}>
+            Thời gian: {formatDateTime(item.notification.thoiGian)}
+          </Text>
+        </View>
+      )}
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
@@ -115,43 +164,27 @@ const NotificationScreen = () => {
       {/* Hiển thị lỗi nếu có */}
       {error && <Text style={styles.errorText}>{error}</Text>}
 
-      {/* Hiển thị loading nếu dữ liệu chưa load xong */}
-      {loading ? (
+      {/* Hiển thị danh sách thông báo */}
+      {loading && page === 0 ? (
         <ActivityIndicator size="large" color={color.darkBlue} />
       ) : (
-        <ScrollView>
-          {filteredNotifications.length > 0 ? (
-            filteredNotifications.slice().reverse().map((item) => (
-              <TouchableOpacity
-                key={item.notification.id}
-                style={[
-                  styles.notificationItem,
-                  item.status === "Chưa đọc" ? styles.unread : styles.read,
-                ]}
-                onPress={() => toggleNotification(item.notification.id)}
-              >
-                <Text style={styles.titleText}>{item.notification.tieuDe}</Text>
-                <Text style={styles.contentText}>{item.notification.moTa}</Text>
-                <Text style={styles.statusText}>{item.status}</Text>
-
-                {expandedNotification === item.notification.id && (
-                  <View
-                    style={[
-                      styles.detail,
-                      item.status === "Chưa đọc" ? styles.unread : styles.read,
-                    ]}
-                  >
-                    <Text style={styles.detailText}>
-                      Thời gian: {formatDateTime(item.notification.thoiGian)}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            ))
-          ) : (
+        <FlatList
+          data={filteredNotifications}
+          keyExtractor={(item) => item.notification.id.toString()}
+          renderItem={renderNotification}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          showsVerticalScrollIndicator={false}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.1}
+          ListEmptyComponent={
             <Text style={styles.noDataText}>Không có thông báo nào</Text>
-          )}
-        </ScrollView>
+          }
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator size="small" color={color.darkBlue} style={{ marginVertical: 10 }} />
+            ) : null
+          }
+        />
       )}
     </View>
   );
