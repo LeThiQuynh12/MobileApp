@@ -14,13 +14,15 @@ import { MaterialIcons, FontAwesome, Feather } from "@expo/vector-icons";
 
 const ChiTietDeTai = () => {
   const { params } = useRoute();
-  const topic = params?.topic;
+  const { topic } = params;
+  const topicId = topic.id;
+  console.log(topicId);
 
   const navigation = useNavigation();
   const tasksct = params?.tasksct || [];
 
   const handleShowAllTask = () => {
-    navigation.navigate("DanhSachNhiemVu", { tasksct });
+    navigation.navigate("DanhSachNhiemVu", { topicId });
   };
 
   const handleEditTopic = () => {

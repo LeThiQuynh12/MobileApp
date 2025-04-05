@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -7,36 +7,52 @@ import {
   Image,
   ScrollView,
   TextInput,
+  ActivityIndicator,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import color from "../../utils/color";
-import ChiTietNhiemVu from "./ChiTietNhiemVu";
 import { Ionicons } from "@expo/vector-icons";
 import api from "../../utils/api";
 
 export default function DanhSachNhiemVu({ route }) {
   const navigation = useNavigation();
   const [selectedStatus, setSelectedStatus] = useState("To do");
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  // Kiểm tra tasks có tồn tại không trước khi sử dụng
-  const tasks = route?.params?.tasksct || []; // Thay tasks thành tasksct
-  // Sử dụng mảng rỗng nếu không có tasks
-  console.log("Route Params ở đanhsachnhiemvu :", route?.params);
+  const topicId = route?.params?.topicId;
+
+  const fetchTask = async () => {
+    try {
+      setLoading(true);
+      console.log(topicId);
+      const response = await api.get(`/tasks/topic/${topicId}`);
+      setTasks(response.data.results || []);
+    } catch (err) {
+      console.error("Lỗi khi lấy dữ liệu:", err);
+      setError("Không thể tải thông tin nhiệm vụ, vui lòng thử lại!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTask();
+  }, []);
 
   const handleStatusChange = (status) => setSelectedStatus(status);
-  const handleAddTask = () => navigation.navigate("GiaoNhiemVu");
+  const handleAddTask = () => navigation.navigate("GiaoNhiemVu", { topicId });
   const handleTaskDetail = (selectedTask) =>
     navigation.navigate("ChiTietNhiemVu", { task: selectedTask });
 
-  // Lọc danh sách nhiệm vụ theo trạng thái đã chọn
-  const filteredTasks = tasks.filter((task) => task.status === selectedStatus);
+  const filteredTasks = tasks.filter(
+    (task) => task.trangThai === selectedStatus
+  );
 
   return (
     <View style={styles.container}>
-      {/* <View style={styles.searchContainer}>
-        <Text style={styles.txtSearch}>Tìm kiếm...</Text>
-      </View> */}
       <View style={styles.searchContainer}>
         <Ionicons
           name="search"
@@ -46,6 +62,7 @@ export default function DanhSachNhiemVu({ route }) {
         />
         <TextInput placeholder="Tìm kiếm nhiệm vụ" style={styles.searchInput} />
       </View>
+
       <View style={styles.bodyContainer}>
         <View style={styles.statusContainer}>
           {["To do", "In progress", "Done"].map((status) => (
@@ -69,9 +86,16 @@ export default function DanhSachNhiemVu({ route }) {
             </TouchableOpacity>
           ))}
         </View>
+
         <ScrollView>
           <View style={styles.taskListContainer}>
-            {filteredTasks.length > 0 ? (
+            {loading ? (
+              <ActivityIndicator size="large" color={color.mainColor} />
+            ) : error ? (
+              <Text style={{ textAlign: "center", marginTop: 20, color: "red" }}>
+                {error}
+              </Text>
+            ) : filteredTasks.length > 0 ? (
               filteredTasks.map((task, index) => (
                 <TouchableOpacity
                   key={index}
@@ -80,16 +104,24 @@ export default function DanhSachNhiemVu({ route }) {
                 >
                   <View style={{ paddingVertical: 10, paddingHorizontal: 15 }}>
                     <Text style={styles.txtHeaderTaskContent}>
-                      {task.title}
+                      {task.tenCongViec}
                     </Text>
-                    <Text style={{ fontSize: 15 }}>{task.summary}</Text>
+                    <Text style={{ fontSize: 15 }}>{task.moTa}</Text>
                     <View style={styles.members}>
-                      {task.members.map((member, idx) => (
-                        <Image
+                      {task.students.map((student, idx) => (
+                        <View
                           key={idx}
-                          source={member.img}
-                          style={styles.imgMember}
-                        />
+                          style={{
+                            backgroundColor: "#ddd",
+                            paddingHorizontal: 8,
+                            paddingVertical: 4,
+                            borderRadius: 10,
+                            marginRight: 5,
+                            marginTop: 5,
+                          }}
+                        >
+                          <Text style={{ fontSize: 12 }}>{student.name}</Text>
+                        </View>
                       ))}
                     </View>
                   </View>
@@ -102,6 +134,7 @@ export default function DanhSachNhiemVu({ route }) {
             )}
           </View>
         </ScrollView>
+
         <TouchableOpacity onPress={handleAddTask} style={styles.addNewTask}>
           <Icon name="plus" size={30} color={color.mainColor} solid={false} />
         </TouchableOpacity>
@@ -112,15 +145,6 @@ export default function DanhSachNhiemVu({ route }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: color.mainColor },
-  searchContainer: {
-    width: "80%",
-    height: 40,
-    backgroundColor: color.white,
-    alignSelf: "center",
-    justifyContent: "center",
-    borderRadius: 15,
-    marginVertical: 20,
-  },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -134,7 +158,6 @@ const styles = StyleSheet.create({
   },
   searchIcon: { marginRight: 5 },
   searchInput: { flex: 1, height: 40 },
-  txtSearch: { marginLeft: 20, fontSize: 15, color: color.darkgray },
   bodyContainer: { flex: 1, backgroundColor: color.gray },
   statusContainer: {
     flexDirection: "row",
@@ -157,8 +180,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   txtHeaderTaskContent: { fontWeight: "bold", fontSize: 15, marginBottom: 10 },
-  members: { flexDirection: "row", marginTop: 10 },
-  imgMember: { width: 25, height: 25, borderRadius: 50 },
+  members: { flexDirection: "row", flexWrap: "wrap", marginTop: 10 },
   addNewTask: {
     position: "absolute",
     bottom: 20,

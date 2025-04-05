@@ -41,7 +41,7 @@ const TopicCard = ({ topic }) => {
         <Text style={styles.cardTitle}>{topic.tenDeTai}</Text>
       </View>
 
-      <View style={styles.cardRow}>
+      {/* <View style={styles.cardRow}>
         <Ionicons name="person-outline" size={18} color="#555" />
         <Text style={styles.cardInfo}>
           Người hướng dẫn: {formatHocVi(topic.lecturer.academicTitle)}
@@ -54,7 +54,7 @@ const TopicCard = ({ topic }) => {
         <Text style={styles.cardInfo}>
           Chủ nhiệm: {topic.group.leader.user.fullName}
         </Text>
-      </View>
+      </View> */}
 
       <View style={styles.cardRow}>
         <Ionicons name="school-outline" size={18} color="#555" />
@@ -69,7 +69,6 @@ const TopicCard = ({ topic }) => {
         )}
         <Text style={styles.statusText}>{topic.tinhTrang}</Text>
       </View>
-
       <TouchableOpacity
         style={styles.detailButton}
         onPress={() => navigation.navigate("ChiTietDeTai", { topic })}
