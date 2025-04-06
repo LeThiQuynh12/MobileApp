@@ -20,7 +20,7 @@ const ChiTietNhiemVu = ({ route }) => {
   console.log("Route Params:", route.params);
 
   const [selectedStatus, setSelectedStatus] = useState(
-    task?.status || "In progress"
+    task?.trangThai || "In progress"
   );
 
   const handleStatusChange = (status) => {
@@ -29,15 +29,13 @@ const ChiTietNhiemVu = ({ route }) => {
 
   console.log(task);
   const [title, setTitle] = useState("");
-  const [summary, setSummary] = useState("");
   const [description, setDescription] = useState("");
 
   // Cập nhật state khi task thay đổi
   useEffect(() => {
     if (task) {
-      setTitle(task.title || "");
-      setSummary(task.summary || "");
-      setDescription(task.description || "");
+      setTitle(task.tenCongViec || "");
+      setDescription(task.moTa || "");
     }
   }, [task]);
 
@@ -56,8 +54,8 @@ const ChiTietNhiemVu = ({ route }) => {
     setNewComment(""); // Xóa nội dung nhập sau khi gửi
   };
 
-  const [startDay, setStartDay] = useState(task?.startDay || "");
-  const [endDay, setEndDay] = useState(task?.endDay || "");
+  const [startDay, setStartDay] = useState(task?.ngayBatDau || "");
+  const [endDay, setEndDay] = useState(task?.ngayKetThuc || "");
 
   const handleSelectedStartDay = (day) => {
     setStartDay(day.dateString); // Cập nhật ngày bắt đầu
@@ -71,6 +69,10 @@ const ChiTietNhiemVu = ({ route }) => {
 
   const [showStartCal, setShowStartCal] = useState(false);
   const [showEndCal, setShowEndCal] = useState(false);
+
+  const handlePress = () => {
+    console.log(task); // Log ra toàn bộ object task
+  };
 
   return (
     <KeyboardAvoidingView
@@ -94,18 +96,24 @@ const ChiTietNhiemVu = ({ route }) => {
                     onChangeText={(text) => setTitle(text)}
                   />
 
-                  <TextInput
+                  {/* <TextInput
                     value={summary} // Dùng state thay vì task?.summary
                     style={styles.textTaskSummary}
                     onChangeText={(text) => setSummary(text)}
-                  />
+                  /> */}
                   <ScrollView style={styles.contentTaskContainer}>
                     <TextInput
                       value={description} // Dùng state thay vì task?.description
                       onChangeText={(text) => setDescription(text)}
                       multiline={true}
                       numberOfLines={4}
-                      style={{ textAlignVertical: "top" }}
+                      style={{
+                        textAlignVertical: "top",
+                        borderWidth: 1,
+                        borderRadius: 10,
+                        borderColor: "#bb9",
+                        padding: 7.5,
+                      }}
                     />
                   </ScrollView>
 
@@ -193,7 +201,11 @@ const ChiTietNhiemVu = ({ route }) => {
                         </Text>
                       </TouchableOpacity>
                     ))}
+
                   </View>
+                  <TouchableOpacity style={styles.button} onPress={handlePress}>
+                    <Text style={styles.buttonText}>Cập nhật</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
             </View>
@@ -249,7 +261,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   taskHeader: {
-    height: 50,
     width: "100%",
     backgroundColor: color.white,
     borderTopLeftRadius: 20,
@@ -264,9 +275,9 @@ const styles = StyleSheet.create({
   task: {
     backgroundColor: color.white,
     width: "90%",
-    height: 500,
     marginTop: 20,
     borderRadius: 20,
+    paddingBottom: 20
   },
   taskContainer: {
     marginHorizontal: 30,
@@ -283,16 +294,19 @@ const styles = StyleSheet.create({
   },
   textTaskName: {
     fontWeight: "bold",
-    fontSize: 15,
-    marginBottom: 5,
-  },
-  textTaskSummary: {
+    borderWidth: 1,
+    borderRadius: 10,
+    borderColor: "#bb9",
+    padding: 10,
     fontSize: 15,
     marginBottom: 10,
   },
+  // textTaskSummary: {
+  //   fontSize: 15,
+  //   marginBottom: 10,
+  // },
   contentTaskContainer: {
-    marginTop: 10,
-    height: 100,
+    marginBottom: 10
   },
   date: {
     flexDirection: "row",
@@ -340,6 +354,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 20,
+  },
+  button: {
+    marginTop: 30,
+    backgroundColor: '#4CAF50',
+    padding: 10,
+    borderRadius: 8,
+  },
+  buttonText: {
+    textAlign: "center",
+    fontSize: 15,
+    color: '#fff',
+    fontWeight: 600
   },
   commentContainer: {
     marginTop: 15,

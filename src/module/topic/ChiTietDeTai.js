@@ -15,6 +15,7 @@ import { MaterialIcons, FontAwesome, Feather } from "@expo/vector-icons";
 import { AuthContext } from "../../context/AuthContext";
 import { useContext } from "react";
 import api from "../../utils/api";
+
 const ChiTietDeTai = () => {
   const { params } = useRoute();
   const { topic } = params;
@@ -165,13 +166,13 @@ const ChiTietDeTai = () => {
                 role === "ADMIN" ||
                 topic?.group?.leader?.user?.id === user.id ||
                 topic?.lecturer?.user?.id === user.id) && (
-                <TouchableOpacity
-                  onPress={handleEditTopic}
-                  style={styles.editButton}
-                >
-                  <Feather name="edit-2" size={22} color="#fff" />
-                </TouchableOpacity>
-              )}
+                  <TouchableOpacity
+                    onPress={handleEditTopic}
+                    style={styles.editButton}
+                  >
+                    <Feather name="edit-2" size={22} color="#fff" />
+                  </TouchableOpacity>
+                )}
             </View>
           </View>
 
