@@ -25,11 +25,15 @@ const NotificationScreen = () => {
   const [hasMore, setHasMore] = useState(true);
   const { user } = useContext(AuthContext);
 
-  // 🛠 GET danh sách thông báo từ API
+  // GET danh sách thông báo từ API
   const fetchNotifications = async (userId, pageNum, isLoadMore = false) => {
     try {
-      if (isLoadMore) setLoadingMore(true);
-      else setLoading(true);
+      if (isLoadMore) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+        setPage(0); // Reset page nếu không phải loadMore
+      }
 
       setError(null);
       const response = await api.get(`/notifications/user/${userId}`, {
@@ -43,12 +47,14 @@ const NotificationScreen = () => {
         if (isLoadMore) {
           setAllNotifications((prev) => [...prev, ...newData]);
           setFilteredNotifications((prev) => [...prev, ...newData]);
+          setPage((prev) => prev + 1); // Cập nhật page sau khi nhận data
         } else {
           setAllNotifications(newData);
           setFilteredNotifications(newData);
+          setPage(1); // Bắt đầu từ trang 1 nếu không phải loadMore
         }
 
-        setHasMore(pageNum < totalPages - 1);
+        setHasMore(pageNum < totalPages - 1); // Cập nhật hasMore
       } else {
         throw new Error("Dữ liệu API không hợp lệ");
       }
@@ -59,6 +65,7 @@ const NotificationScreen = () => {
       setLoadingMore(false);
     }
   };
+
 
   useEffect(() => {
     if (user) {

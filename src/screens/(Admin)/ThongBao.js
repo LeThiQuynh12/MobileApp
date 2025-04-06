@@ -58,29 +58,30 @@ const QuanLyThongBao = () => {
 
   const fetchNotifications = async (pageNum, isLoadMore = false) => {
     try {
-      if (isLoadMore) setLoadingMore(true);
-      else setLoading(true);
+      if (isLoadMore) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+        setPage(0); // Reset page nếu không phải loadMore
+      }
 
       setError(null);
       const response = await api.get("/notifications/split", {
         params: { page: pageNum, size: 5 },
       });
 
-      console.log('response:', response);
-      console.log('response.data:', response.data);
-
       const newData = response.data.results.content || [];
-      console.log('newData:', newData);
-
       const totalPages = response.data.results.totalPages || 0;
 
       if (isLoadMore) {
         setNotifications((prev) => [...prev, ...newData]);
+        setPage((prevPage) => prevPage + 1); // Chỉ tăng page sau khi nhận dữ liệu thành công
       } else {
         setNotifications(newData);
+        setPage(1); // Trang đầu tiên sau khi reset
       }
 
-      setHasMore(pageNum < totalPages - 1);
+      setHasMore(pageNum < totalPages - 1); // Nếu chưa đến trang cuối thì còn dữ liệu
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error);
       setError("Không thể tải thông báo, vui lòng thử lại!");
@@ -107,11 +108,10 @@ const QuanLyThongBao = () => {
 
   const loadMore = () => {
     if (!loadingMore && hasMore) {
-      const nextPage = page + 1;
-      setPage(nextPage);
-      fetchNotifications(nextPage, true);
+      fetchNotifications(page, true);
     }
   };
+
 
   const filteredNotifications = notifications.filter((notif) => {
     const tieuDe = notif.tieuDe || "";
@@ -147,16 +147,28 @@ const QuanLyThongBao = () => {
           renderItem={({ item }) => (
             <NotificationCard notification={item} onDelete={handleDeleteNotification} />
           )}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={{ paddingBottom: 20, flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
           onEndReached={loadMore}
           onEndReachedThreshold={0.1}
           ListFooterComponent={
             loadingMore ? (
-              <ActivityIndicator size="small" color={color.darkBlue} style={{ marginVertical: 10 }} />
+              <ActivityIndicator
+                size="small"
+                color={color.darkBlue}
+                style={{ marginVertical: 10 }}
+              />
             ) : null
           }
+          ListEmptyComponent={
+            !loading && (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>Không có thông báo nào.</Text>
+              </View>
+            )
+          }
         />
+
       )}
     </View>
   );
@@ -233,5 +245,15 @@ const styles = {
     color: "#fff",
     fontWeight: "bold",
     textAlign: "center",
+  },
+  emptyContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 30,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#666",
   },
 };

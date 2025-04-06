@@ -27,7 +27,6 @@ export default function DanhSachNhiemVu({ route }) {
   const fetchTask = async () => {
     try {
       setLoading(true);
-      console.log(topicId);
       const response = await api.get(`/tasks/topic/${topicId}`);
       setTasks(response.data.results || []);
     } catch (err) {
