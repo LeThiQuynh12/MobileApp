@@ -1,22 +1,25 @@
 import axios from "axios";
-
+// import { useNavigation } from "@react-navigation/native";
+import { navigate } from "./NavigationService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Alert } from "react-native";
 
 // export const API_URL = "http://10.0.2.2:8080/api";
 
-export const API_URL = "http://192.168.3.102:8080/api";
+export const API_URL = "http://172.20.10.7:8080/api";
 
 // Lưu token
 export const saveTokens = async ({
   access_token,
   refresh_token,
-  access_expires_in = 1000,
-  refresh_expires_in = 1000,
+  access_expires_in,
+  refresh_expires_in,
 }) => {
   try {
-    // console.log("token: ", access_token, refresh_token);
     const access_expires_at = Date.now() + access_expires_in * 1000; // Tính thời gian hết hạn (millisecond)
     const refresh_expires_at = Date.now() + refresh_expires_in * 1000; // Tính thời gian hết hạn (millisecond)
+
+    // const refresh_expires_at = Date.now() + 5 * 1000;
     const tokens = JSON.stringify({
       access_token,
       refresh_token,
@@ -35,6 +38,7 @@ export const saveTokens = async ({
 
 // Lấy token
 export const getTokens = async () => {
+  // const navigation = useNavigation();
   try {
     const tokens = await AsyncStorage.getItem("authTokens");
     if (!tokens) return null;
@@ -46,8 +50,16 @@ export const getTokens = async () => {
       refresh_expires_at,
     } = JSON.parse(tokens);
 
-    if (Date.now() > refresh_expires_at) {
-      console.warn("Refresh token đã hết hạn! Yêu cầu đăng nhập lại.");
+    // console.log("access_ex: ", access_expires_at);
+    // console.log(
+    //   "Thời gian hết hạn access token:",
+    //   new Date(access_expires_at).toLocaleString()
+    // );
+    // console.log(refresh_expires_at, Date.now());
+
+    if (Date.now() >= refresh_expires_at) {
+      Alert.alert("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại");
+      navigate("DangNhap");
       await removeTokens();
       return null;
     }
@@ -66,14 +78,21 @@ export const getTokens = async () => {
 };
 
 export const refreshTokens = async (refresh_token) => {
+  console.log("refresh token: ", refresh_token);
   try {
     const response = await axios.post(`${API_URL}/auth/refresh`, {
-      refresh_token,
+      refreshToken: refresh_token,
     });
+    // console.log("response.data:", response.data);
 
-    if (response.data && response.data.access_token) {
-      const { access_token, refresh_token, expires_in } = response.data;
-      await saveTokens({ access_token, refresh_token, expires_in });
+    if (response.data.results && response.data.results.access_token) {
+      const {
+        access_token,
+        refresh_token,
+        access_expires_in = 5,
+        refresh_expires_in = 1000,
+      } = response.data.results;
+      await saveTokens(response.data.results);
       return { access_token, refresh_token };
     }
   } catch (error) {
@@ -113,8 +132,6 @@ api.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
-
-// ✨ Thêm interceptor để tự động refresh token khi bị lỗi 401
 // api.interceptors.response.use(
 //   (response) => response,
 //   async (error) => {
@@ -126,12 +143,24 @@ api.interceptors.request.use(
 //       const tokens = await getTokens();
 
 //       if (tokens?.refresh_token) {
+//         // Thử làm mới refresh token
 //         const newTokens = await refreshTokens(tokens.refresh_token);
 //         if (newTokens?.access_token) {
+//           // Nếu refresh thành công, gắn access token mới vào request và gửi lại
 //           originalRequest.headers.Authorization = `Bearer ${newTokens.access_token}`;
-//           return api(originalRequest); // Gửi lại request cũ với token mới
+//           return api(originalRequest); // Gửi lại request với token mới
 //         }
 //       }
+
+//       // Nếu refresh token thất bại, xóa token và yêu cầu đăng nhập lại
+//       await removeTokens(); // Xóa token đã lưu
+//       // console.log("refresh token thất bại...chuyển hướng")
+//       // Bạn có thể thêm logic để chuyển hướng người dùng về màn hình đăng nhập
+//       // ví dụ: navigation.navigate('Login') nếu bạn đang dùng navigation trong ứng dụng
+
+//       console.warn(
+//         "Token hết hạn hoặc refresh token thất bại. Vui lòng đăng nhập lại."
+//       );
 //     }
 
 //     return Promise.reject(error);

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 
 import { Text, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
@@ -8,7 +8,9 @@ import {
   createDrawerNavigator,
   DrawerContentScrollView,
   DrawerItemList,
+  DrawerItem,
 } from "@react-navigation/drawer";
+import { useIsFocused } from "@react-navigation/core";
 import { createStackNavigator } from "@react-navigation/stack";
 
 import BackButton from "../components/BackButton";
@@ -31,6 +33,9 @@ import TrangChuAdmin from "../screens/(Admin)/TrangChuAdmin";
 import ThemThongBao from "../module/notification/ThemThongBao";
 import color from "../utils/color";
 import DangKyDeTai from "../module/topic/DangKyDeTai";
+import { AuthContext } from "../context/AuthContext";
+import { StyleSheet } from "react-native";
+import { View, Image } from "react-native";
 
 // 🏠 Các màn hình quản lý Admin
 function AdminHomeScreen() {
@@ -354,7 +359,7 @@ function NotificationScreen() {
         ),
         headerRight: () => (
           <HeaderPlusIcon navigation={navigation} destination="ThemThongBao" />
-        )
+        ),
       })}
     >
       <Stack.Screen
@@ -387,35 +392,98 @@ function NotificationScreen() {
 
 // 🛠 Custom Drawer (thêm chức năng Đăng xuất)
 const CustomDrawer = (props) => {
-  const { setUserRole, navigation } = props; // Nhận setUserRole từ props
+  const { logout, user } = useContext(AuthContext);
+  const { navigation } = props; // Nhận setUserRole từ props
 
-  const handleLogout = () => {
-    props.setUserRole(null);
-    // onPress: () => {
-    //         props.setUserRole(null); // 🏁 Cập nhật userRole -> Quay về màn hình đăng nhập
-    //       },
-    // Alert.alert(
-    //   "Xác nhận",
-    //   "Bạn có chắc chắn muốn đăng xuất?",
-    //   [
-    //     { text: "Hủy", style: "cancel" },
-    //     {
-    //       text: "Đăng xuất",
-    //       onPress: () => {
-    //         props.setUserRole(null); // 🏁 Cập nhật userRole -> Quay về màn hình đăng nhập
-    //       },
-    //     },
-    //   ],
-    //   { cancelable: true }
-    // );
+  const currentRoute =
+    navigation.getState()?.routes[navigation.getState().index]?.name ||
+    "AdminHome";
+  const navigateToTab = (routeName) => {
+    navigation.navigate(routeName);
   };
 
   return (
     <DrawerContentScrollView {...props}>
-      <DrawerItemList {...props} />
-      <TouchableOpacity onPress={handleLogout} style={{ padding: 16 }}>
+      <View style={styles.userInfo}>
+        <Image
+          source={{ uri: "https://i.imgur.com/6VBx3io.png" }}
+          style={styles.avatar}
+        />
+        <Text style={styles.userName}>{user?.fullName || "StudentName"}</Text>
+        <Text style={styles.userEmail}>{user?.email || "StudentEmail"}</Text>
+      </View>
+      <View style={styles.menuItems}>
+        {[
+          { label: "Trang chủ", icon: "home", route: "AdminHome" },
+          {
+            label: "Quản lý người dùng",
+            icon: "users",
+            route: "UserManagement",
+          },
+          {
+            label: "Quản lý đề tài",
+            icon: "list-alt",
+            route: "TopicManagement",
+          },
+          {
+            label: "Quản lý nhiệm vụ",
+            icon: "tasks",
+            route: "TaskManagement",
+          },
+          {
+            label: "Quản lý đánh giá",
+            icon: "star",
+            route: "ReviewManagement",
+          },
+          {
+            label: "Quản lý tài liệu",
+            icon: "folder",
+            route: "DocumentManagement",
+          },
+          {
+            label: "Quản lý thông báo",
+            icon: "bell",
+            route: "NotificationManagement",
+          },
+        ].map((item) => {
+          const isFocused = currentRoute === item.route;
+
+          return (
+            <DrawerItem
+              key={item.route}
+              label={item.label}
+              icon={({ color }) => (
+                <Icon
+                  name={item.icon}
+                  size={20}
+                  color={isFocused ? "#fff" : color}
+                />
+              )}
+              onPress={() => navigateToTab(item.route)}
+              style={[styles.drawerItem, isFocused && styles.drawerItemActive]}
+              labelStyle={{ color: isFocused ? "#fff" : "#000" }}
+            />
+          );
+        })}
+      </View>
+
+      <View style={styles.logoutContainer}>
+        <TouchableOpacity
+          style={styles.logoutButton}
+          onPress={async () => {
+            await logout();
+            navigation.navigate("DangNhap");
+          }}
+        >
+          <Icon name="sign-out" size={20} color="black" />
+          <Text style={styles.logoutText}>Đăng xuất</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* <DrawerItemList {...props} /> */}
+      {/* <TouchableOpacity onPress={handleLogout} style={{ padding: 16 }}>
         <Text style={{ color: "red", fontWeight: "bold" }}>Đăng xuất</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </DrawerContentScrollView>
   );
 };
@@ -424,18 +492,18 @@ const CustomDrawer = (props) => {
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 
-const AdminNavigator = ({ setUserRole }) => {
+const AdminNavigator = () => {
   return (
     <Drawer.Navigator
-      drawerContent={(props) => (
-        <CustomDrawer {...props} setUserRole={setUserRole} />
-      )}
-      screenOptions={{
-        headerShown: false,
-        drawerStyle: { backgroundColor: "#fff", width: 250 },
-        drawerActiveTintColor: "#007bff",
-        drawerInactiveTintColor: "#333",
-      }}
+      drawerContent={(props) => <CustomDrawer {...props} />}
+      // screenOptions={{
+      //   headerShown: false,
+      //   drawerStyle: { backgroundColor: "#fff" },
+      //   drawerActiveTintColor: "#007bff",
+      //   drawerInactiveTintColor: "#333",
+
+      // }}
+      screenOptions={{ headerShown: false }}
     >
       <Drawer.Screen
         name="AdminHome"
@@ -474,7 +542,7 @@ const AdminNavigator = ({ setUserRole }) => {
         component={TaskManagementScreen}
         options={{
           headerShown: false,
-          title: "Quản lý Công việc",
+          title: "Quản lý Nhiệm vụ",
           drawerIcon: ({ color, size }) => (
             <Icon name="tasks" size={size} color={color} />
           ),
@@ -501,7 +569,7 @@ const AdminNavigator = ({ setUserRole }) => {
         }}
       />
       <Drawer.Screen
-        name="Notification"
+        name="NotificationManagement"
         component={NotificationScreen}
         options={{
           title: "Thông báo",
@@ -513,5 +581,65 @@ const AdminNavigator = ({ setUserRole }) => {
     </Drawer.Navigator>
   );
 };
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  userInfo: {
+    alignItems: "center",
+    paddingVertical: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+  },
+  avatar: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+  },
+  userName: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginTop: 10,
+  },
+  userEmail: {
+    fontSize: 14,
+    color: "#666",
+  },
+  menuItems: {
+    marginTop: 10,
+  },
+  themeSwitch: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#e0e0e0",
+    padding: 10,
+    borderRadius: 20,
+    marginTop: 20,
+  },
+  themeText: { fontSize: 16, fontWeight: "bold", marginHorizontal: 5 },
+  logoutContainer: {
+    marginTop: "auto",
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: "#ddd",
+  },
+  logoutButton: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  logoutText: {
+    fontSize: 16,
+    marginLeft: 10,
+  },
+  drawerItem: {
+    borderRadius: 5,
+    marginVertical: 5,
+  },
+  drawerItemActive: {
+    backgroundColor: color.mainColor,
+  },
+});
 
 export default AdminNavigator;

@@ -1,7 +1,8 @@
 import React, { createContext, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import api, { getTokens, saveTokens } from "../utils/api";
+import api, { getTokens, removeTokens, saveTokens } from "../utils/api";
 import { useNavigation } from "@react-navigation/native";
+import { Alert } from "react-native";
 
 export const AuthContext = createContext();
 
@@ -53,6 +54,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (username, password) => {
     // console.log(username, password);
     try {
+      // console.log(123);
       const response = await api.post("/auth/login", { username, password });
       // console.log("response: ", response.data.results);
       if (response.data.results.access_token) {
@@ -61,16 +63,21 @@ export const AuthProvider = ({ children }) => {
         return true;
       }
     } catch (error) {
-      console.error("❌ Lỗi đăng nhập:", error);
+      console.log(error);
+      // Alert.alert("Vui lòng kiểm tra lại thông tin đăng nhập!");
     }
     return false;
   };
 
   // 📌 Hàm đăng xuất
   const logout = async () => {
-    await AsyncStorage.removeItem("user");
-    await removeTokens();
-    setUser(null);
+    try {
+      await AsyncStorage.removeItem("user");
+      await removeTokens();
+      setUser(null);
+    } catch (error) {
+      // Alert.alert("Đăng xuất thất bại!");
+    }
   };
 
   useEffect(() => {

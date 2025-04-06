@@ -1,9 +1,7 @@
-import React, {
-  useContext,
-  useState,
-} from 'react';
+import React, { useContext, useEffect, useState } from "react";
 
 import {
+  Alert,
   Image,
   Keyboard,
   KeyboardAvoidingView,
@@ -14,85 +12,53 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
-} from 'react-native';
-import {
-  KeyboardAwareScrollView,
-} from 'react-native-keyboard-aware-scroll-view';
-import Icon from 'react-native-vector-icons/FontAwesome';
+} from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import Icon from "react-native-vector-icons/FontAwesome";
 
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from "@react-navigation/native";
 
-import { AuthContext } from '../context/AuthContext';
-import color from '../utils/color';
+import { AuthContext } from "../context/AuthContext";
+import color from "../utils/color";
+import { ActivityIndicator } from "react-native";
 
-const DangNhap = ({ setUserRole = null }) => {
+const DangNhap = () => {
   const navigation = useNavigation();
-  const { login, getCurrentUser } = useContext(AuthContext);
+  const { login, user } = useContext(AuthContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [selectedRole, setSelectedRole] = useState("Giảng viên");
+  const [isLoading, setIsLoading] = useState(false);
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
 
-  const [selectedDate, setSelectedDate] = useState("");
+  useEffect(() => {
+    if (user?.role) {
+      if (user.role === "LECTURER") {
+        navigation.replace("GiangVien");
+      } else if (user.role === "STUDENT") {
+        navigation.replace("SinhVien");
+      } else if (user.role === "ADMIN") {
+        navigation.replace("Admin");
+      }
+    }
+  }, [user?.role]);
 
   const handleHome = async () => {
-    // console.log("API_URL", API_URL);
-    // console.log(email, password);
+    if (email.trim() === "" || password.trim() === "") {
+      Alert.alert("Vui lòng nhập đủ thông tin email và mật khẩu");
+      return;
+    }
+    setIsLoading(true);
     const loginData = {
-      username: email,
+      username: email.toLowerCase(),
       password,
     };
-    // axios
-    //   .post(API_URL + "/auth/login", loginData, {
-    //     headers: {
-    //       "Content-Type": "application/json", // Xác định dữ liệu là JSON
-    //       Accept: "application/json", // Chấp nhận phản hồi JSON
-    //     },
-    //     // withCredentials: true, // Cho phép gửi & nhận cookie từ server
-    //   })
-    //   .then((response) => {
-    //     // console.log("Đăng nhập thành công:", response.data);
-    //     const access_token = response.data.results.access_token;
-    //     const refresh_token = response.data.results.refresh_token;
-    //     // console.log("token: ", access_token, refresh_token);
-    //     // localStorage.setItem("access_token", access_token);
-    //     // localStorage.setItem("refresh_token", refresh_token);
-    //     // navigation("/");
-    //     // Lưu token
-    //     saveTokens({ access_token, refresh_token });
-    //   })
-    //   .catch((error) => {
-    //     console.error(
-    //       "Lỗi đăng nhập:",
-    //       error.response ? error.response.data : error.message
-    //     );
-    //   });
-
-    // Gửi request POST
     try {
-      // const response = await api.post("/auth/login", loginData);
-      // console.log("Đăng nhập thành công:", response.data.results);
-      // const access_token = response.data.results.access_token;
-      // const refresh_token = response.data.results.refresh_token;
-      // await saveTokens({ access_token, refresh_token });
-      // await getCurrentUser();
       await login(loginData.username, loginData.password);
-      // setSelectedRole("admin");
-      // setUserRole("admin");
-      // navigation("/");
     } catch (error) {
-      console.error("Lỗi đăng nhập:", error);
-    }
-
-    // console.log("token: ", await getTokens());
-
-    if (selectedRole === "Giảng viên") {
-      setUserRole("giangvien");
-    } else if (selectedRole === "Sinh viên") {
-      setUserRole("sinhvien");
-    } else {
-      setUserRole("admin");
+      Alert.alert("Vui lòng kiểm tra lại thông tin đăng nhập!");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -119,59 +85,6 @@ const DangNhap = ({ setUserRole = null }) => {
             />
             <Text style={styles.title}>EPU NCKH</Text>
             <Text style={styles.subtitle}>Vui lòng đăng nhập tài khoản</Text>
-
-            <View style={styles.roleContainer}>
-              <TouchableOpacity
-                style={[
-                  styles.roleButton,
-                  selectedRole === "Giảng viên" && styles.activeButton,
-                ]}
-                onPress={() => setSelectedRole("Giảng viên")}
-              >
-                <Text
-                  style={[
-                    styles.roleText,
-                    selectedRole === "Giảng viên" && styles.activeText,
-                  ]}
-                >
-                  Giảng viên
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.roleButton,
-                  selectedRole === "Sinh viên" && styles.activeButton,
-                ]}
-                onPress={() => setSelectedRole("Sinh viên")}
-              >
-                <Text
-                  style={[
-                    styles.roleText,
-                    selectedRole === "Sinh viên" && styles.activeText,
-                  ]}
-                >
-                  Sinh viên
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.roleButton,
-                  selectedRole === "Admin" && styles.activeButton,
-                ]}
-                onPress={() => setSelectedRole("Admin")}
-              >
-                <Text
-                  style={[
-                    styles.roleText,
-                    selectedRole === "Admin" && styles.activeText,
-                  ]}
-                >
-                  Admin
-                </Text>
-              </TouchableOpacity>
-            </View>
 
             <View style={styles.inputContainer}>
               <Icon
@@ -229,9 +142,16 @@ const DangNhap = ({ setUserRole = null }) => {
                 <Text style={styles.forgotPw}>Quên mật khẩu</Text>
               </TouchableOpacity>
             </View>
-
-            <TouchableOpacity style={styles.buttonLogin} onPress={handleHome}>
-              <Text style={styles.buttonLoginText}>Đăng nhập</Text>
+            <TouchableOpacity
+              style={[styles.buttonLogin, isLoading && { opacity: 0.5 }]}
+              onPress={handleHome}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.buttonLoginText}>Đăng nhập</Text>
+              )}
             </TouchableOpacity>
           </View>
         </TouchableWithoutFeedback>

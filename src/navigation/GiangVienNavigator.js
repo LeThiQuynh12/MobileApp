@@ -53,7 +53,6 @@ function HomeStack() {
               onPress={() => navigation.goBack()}
               //   style={{ marginLeft: 20 }}
             >
-              {/* <AntDesign name="arrowleft" size={24} color={color.darkBlue} /> */}
               <BackButton></BackButton>
             </TouchableOpacity>
           ) : (
@@ -316,7 +315,6 @@ function BottomTabs() {
 // 🛠 Drawer Navigation
 function CustomDrawerContent(props) {
   const { user, logout } = useContext(AuthContext);
-  console.log(user);
   const { state, navigation } = props;
   const currentRoute =
     state.routes[state.index]?.state?.routes?.[
@@ -372,8 +370,9 @@ function CustomDrawerContent(props) {
         <TouchableOpacity
           style={styles.logoutButton}
           onPress={async () => {
-            navigation.navigate("DangNhap");
             await logout();
+            // console.log("user log out:", user);
+            navigation.navigate("DangNhap");
           }}
         >
           <Icon name="sign-out" size={20} color="black" />
@@ -384,17 +383,14 @@ function CustomDrawerContent(props) {
   );
 }
 
-const GiangVienNavigator = ({ setUserRole }) => {
+const GiangVienNavigator = () => {
   return (
     <Drawer.Navigator
       drawerContent={(props) => <CustomDrawerContent {...props} />}
-      screenOptions={{ headerShown: false }} // Ẩn toàn bộ tiêu đề
+      screenOptions={{ headerShown: false }}
     >
       <Drawer.Screen name="GiangVienHome" component={BottomTabs} />
-      {/* <Drawer.Screen name="MainTabsSV" component={BottomTabs} /> */}
-      <Drawer.Screen name="DangNhap">
-        {(props) => <DangNhap {...props} setUserRole={setUserRole} />}
-      </Drawer.Screen>
+      <Drawer.Screen name="DangNhap" component={DangNhap} />
     </Drawer.Navigator>
   );
 };
