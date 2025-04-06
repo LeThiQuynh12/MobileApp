@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -6,29 +6,109 @@ import {
   TouchableOpacity,
   View,
   Image,
+  Alert,
   Linking,
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import color from "../../utils/color";
 import { MaterialIcons, FontAwesome, Feather } from "@expo/vector-icons";
-
+import { AuthContext } from "../../context/AuthContext";
+import { useContext } from "react";
+import api from "../../utils/api";
 const ChiTietDeTai = () => {
   const { params } = useRoute();
   const { topic } = params;
   const topicId = topic.id;
   console.log(topicId);
+  const [loading, setLoading] = useState(true);
+  const tasksct = params?.tasksct || [];
+  const { user } = useContext(AuthContext);
 
   const navigation = useNavigation();
-  const tasksct = params?.tasksct || [];
-
   const handleShowAllTask = () => {
     navigation.navigate("DanhSachNhiemVu", { topicId });
   };
+  const role = user.role;
+  console.log(role);
 
   const handleEditTopic = () => {
     navigation.navigate("SuaDeTai", { topic });
   };
+  const updateTopicStatus = async (topicId, status) => {
+    try {
+      const response = await api.patch(
+        `/topics/status/${topicId}?status=${encodeURIComponent(status)}`,
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
 
+  const [currentTopic, setCurrentTopic] = useState(topic);
+
+  const handleApproved = async () => {
+    try {
+      if (!topicId) {
+        alert("Không tìm thấy ID đề tài");
+        return;
+      }
+
+      const response = await api.patch(
+        `/topics/status/${topicId}?status=Đã duyệt`
+      );
+
+      if (response.status === 200) {
+        alert("Đề tài đã được duyệt thành công!");
+      } else {
+        alert("Cập nhật trạng thái không thành công!");
+      }
+    } catch (error) {
+      console.error("Lỗi khi cập nhật trạng thái:", error);
+      alert(`Lỗi: ${error.message}`);
+    }
+  };
+  const handleRejected = async () => {
+    // Thêm topic làm tham số
+    try {
+      const confirmDelete = await new Promise((resolve) => {
+        Alert.alert(
+          "Xác nhận",
+          "Bạn có chắc chắn muốn từ chối và xóa đề tài này?",
+          [
+            { text: "Hủy", onPress: () => resolve(false), style: "cancel" },
+            { text: "Xóa", onPress: () => resolve(true), style: "destructive" },
+          ]
+        );
+      });
+
+      if (!confirmDelete) return;
+
+      if (!topicId) {
+        alert("Không tìm thấy ID đề tài");
+        return;
+      }
+
+      const response = await api.delete(`/topics/${topicId}`);
+
+      if (response.status === 200 || response.status === 204) {
+        alert("Đề tài đã bị từ chối và xóa thành công!");
+
+        navigation.goBack(); // Thêm điều hướng nếu cần
+      } else {
+        alert("Xóa đề tài không thành công!");
+      }
+    } catch (error) {
+      console.error("Lỗi khi xóa đề tài:", error);
+      alert(`Lỗi: ${error.message}`);
+    }
+  };
   const handleOpenDocument = () => {
     // Replace with actual document URL or handling
     Linking.openURL("https://example.com/document.pdf");
@@ -80,12 +160,18 @@ const ChiTietDeTai = () => {
           <View style={styles.header}>
             <View style={styles.headerContent}>
               <Text style={styles.topicName}>{topic.tenDeTai}</Text>
-              <TouchableOpacity
-                onPress={handleEditTopic}
-                style={styles.editButton}
-              >
-                <Feather name="edit-2" size={22} color="#fff" />
-              </TouchableOpacity>
+
+              {(role === "LECTURER" ||
+                role === "ADMIN" ||
+                topic?.group?.leader?.user?.id === user.id ||
+                topic?.lecturer?.user?.id === user.id) && (
+                <TouchableOpacity
+                  onPress={handleEditTopic}
+                  style={styles.editButton}
+                >
+                  <Feather name="edit-2" size={22} color="#fff" />
+                </TouchableOpacity>
+              )}
             </View>
           </View>
 
@@ -237,16 +323,26 @@ const ChiTietDeTai = () => {
       </View>
 
       {/* Action buttons */}
-      <View style={styles.actionButtons}>
-        <TouchableOpacity style={[styles.actionButton, styles.rejectButton]}>
-          <MaterialIcons name="close" size={20} color="#fff" />
-          <Text style={styles.actionButtonText}>Từ chối</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionButton, styles.approveButton]}>
-          <MaterialIcons name="check" size={20} color="#fff" />
-          <Text style={styles.actionButtonText}>Duyệt đề tài</Text>
-        </TouchableOpacity>
-      </View>
+
+      {(role === "LECTURER" || role === "ADMIN") &&
+        topic.tinhTrang == "Chưa duyệt" && (
+          <View style={styles.actionButtons}>
+            <TouchableOpacity
+              style={[styles.actionButton, styles.rejectButton]}
+              onPress={handleRejected}
+            >
+              <MaterialIcons name="close" size={20} color="#fff" />
+              <Text style={styles.actionButtonText}>Từ chối</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.actionButton, styles.approveButton]}
+              onPress={handleApproved}
+            >
+              <MaterialIcons name="check" size={20} color="#fff" />
+              <Text style={styles.actionButtonText}>Duyệt đề tài</Text>
+            </TouchableOpacity>
+          </View>
+        )}
     </ScrollView>
   );
 };
