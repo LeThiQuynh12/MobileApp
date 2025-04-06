@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 import {
   FlatList,
@@ -7,10 +7,10 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
+} from "react-native";
 
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 const TrangChuAdmin = () => {
   const navigation = useNavigation();
@@ -21,16 +21,49 @@ const TrangChuAdmin = () => {
 
   // Danh sách chức năng quản lý
   const menuItems = [
-    { id: "1", title: "Quản lý Người Dùng", icon: "people", screen: "QuanLyNguoiDung" },
-    { id: "2", title: "Quản lý Đề Tài", icon: "book", screen: "QuanLyDeTai" },
-    { id: "3", title: "Quản lý Công Việc", icon: "briefcase", screen: "QuanLyCongViec" },
-    { id: "4", title: "Quản lý Đánh Giá", icon: "star", screen: "QuanLyDanhGia" },
-    { id: "5", title: "Quản lý Tài Liệu", icon: "document", screen: "QuanLyTaiLieu" },
-    { id: "6", title: "Quản lý Thông Báo", icon: "notifications", screen: "QuanLyThongBao" },
+    {
+      id: "1",
+      title: "Quản lý Người Dùng",
+      icon: "people",
+      screen: "UserManagement",
+    },
+    {
+      id: "2",
+      title: "Quản lý Đề Tài",
+      icon: "book",
+      screen: "TopicManagement",
+    },
+    {
+      id: "3",
+      title: "Quản lý Nhiệm vụ",
+      icon: "briefcase",
+      screen: "TaskManagement",
+    },
+    {
+      id: "4",
+      title: "Quản lý Đánh Giá",
+      icon: "star",
+      screen: "ReviewManagement",
+    },
+    {
+      id: "5",
+      title: "Quản lý Tài Liệu",
+      icon: "document",
+      screen: "DocumentManagement",
+    },
+    {
+      id: "6",
+      title: "Quản lý Thông Báo",
+      icon: "notifications",
+      screen: "NotificationManagement",
+    },
   ];
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity style={styles.card} onPress={() => navigation.navigate(item.screen)}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => navigation.navigate(item.screen)}
+    >
       <View style={styles.iconContainer}>
         <Ionicons name={item.icon} size={32} color="white" />
       </View>
@@ -41,15 +74,20 @@ const TrangChuAdmin = () => {
   return (
     <View style={styles.container}>
       {/* Hình ảnh minh họa */}
-      <Image source={{ uri: "https://cdn-icons-png.flaticon.com/128/9422/9422941.png" }} style={styles.image} />
+      <Image
+        source={{
+          uri: "https://cdn-icons-png.flaticon.com/128/9422/9422941.png",
+        }}
+        style={styles.image}
+      />
 
       {/* Thống kê */}
       <View style={styles.statsContainer}>
-        <View style={[styles.statBox, { backgroundColor: "#42A5F5" }]}> 
+        <View style={[styles.statBox, { backgroundColor: "#42A5F5" }]}>
           <Text style={styles.statNumber}>{totalUsers}</Text>
           <Text style={styles.statLabel}>Tổng người dùng</Text>
         </View>
-        <View style={[styles.statBox, { backgroundColor: "#66BB6A" }]}> 
+        <View style={[styles.statBox, { backgroundColor: "#66BB6A" }]}>
           <Text style={styles.statNumber}>{activeUsers}</Text>
           <Text style={styles.statLabel}>Đang truy cập</Text>
         </View>
@@ -61,6 +99,7 @@ const TrangChuAdmin = () => {
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={styles.listContainer}
+        showsVerticalScrollIndicator={false}
       />
     </View>
   );

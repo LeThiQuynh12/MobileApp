@@ -109,7 +109,7 @@ const DanhSachDeTai = () => {
         const response = await api.get("/topics");
         setTopics(response.data.results || []);
       } catch (err) {
-        console.error("Fetch error:", err);
+        // console.error("Fetch error:", err);
         setError(err.message);
         setTopics([]);
       } finally {

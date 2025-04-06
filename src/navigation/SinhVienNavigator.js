@@ -10,22 +10,18 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/FontAwesome";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import SuaDeTai from "../module/topic/ChinhSuaDeTai";
 // // Import các màn hình
-// import HomeScreen from "../../src/screens/HomeScreen";
 import XemTienDo from "../../src/screens/XemTienDo";
-// import DanhSachDeTai from "../../src/screens/DanhSachDeTai";
 import ThongTinCaNhan from "../../src/screens/ThongTinCaNhan";
 import DangNhap from "../screens/DangNhap";
-// import ChiTietDeTai from "../../src/screens/topic/ChiTietDeTai";
 import TrangChuSV from "../../src/screens/(SV)/TrangChu";
 import ThongBao from "../../src/screens/ThongBao";
 import color from "../../src/utils/color";
 import { AntDesign, Fontisto } from "@expo/vector-icons";
 import BackButton from "../components/BackButton";
 import HeaderLeft from "../components/HeaderLeft";
-// import DanhSachDeTai from "../screens/topic/DanhSachDeTai";
 import ChiTietDeTai from "../module/topic/ChiTietDeTai";
 import DanhSachDeTai from "../module/topic/DanhSachDeTai";
 import DanhSachNhiemVu from "../module/task/DanhSachNhiemVu";
@@ -33,6 +29,7 @@ import GiaoNhiemVu from "../module/task/GiaoNhiemVu";
 import ChiTietNhiemVu from "../module/task/ChiTietNhiemVu";
 import DangKyDeTai from "../module/topic/DangKyDeTai";
 import HeaderPlusIcon from "../components/HeaderRightPlus";
+import { AuthContext } from "../context/AuthContext";
 // import DanhSachDeTai from "../screens/DanhSachDeTai";
 
 // Tạo các navigator
@@ -320,6 +317,7 @@ function BottomTabs() {
 // 🛠 Drawer Navigation
 function CustomDrawerContent(props) {
   const { state, navigation } = props;
+  const { user, logout } = useContext(AuthContext);
   const currentRoute =
     state.routes[state.index]?.state?.routes?.[
       state.routes[state.index]?.state?.index
@@ -336,8 +334,8 @@ function CustomDrawerContent(props) {
           source={{ uri: "https://i.imgur.com/6VBx3io.png" }}
           style={styles.avatar}
         />
-        <Text style={styles.userName}>Khúc Triển</Text>
-        <Text style={styles.userEmail}>trienk@gmail.com</Text>
+        <Text style={styles.userName}>{user?.fullName || "StudentName"}</Text>
+        <Text style={styles.userEmail}>{user?.email || "StudentEmail"}</Text>
       </View>
 
       <View style={styles.menuItems}>
@@ -375,7 +373,10 @@ function CustomDrawerContent(props) {
       <View style={styles.logoutContainer}>
         <TouchableOpacity
           style={styles.logoutButton}
-          onPress={() => navigation.navigate("DangNhap")}
+          onPress={async () => {
+            await logout();
+            navigation.navigate("DangNhap");
+          }}
         >
           <Icon name="sign-out" size={20} color="black" />
           <Text style={styles.logoutText}>Đăng xuất</Text>
@@ -385,17 +386,14 @@ function CustomDrawerContent(props) {
   );
 }
 
-const SinhVienNavigator = ({ setUserRole }) => {
+const SinhVienNavigator = () => {
   return (
     <Drawer.Navigator
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{ headerShown: false }} // Ẩn toàn bộ tiêu đề
     >
       <Drawer.Screen name="SinhVienHome" component={BottomTabs} />
-      {/* <Drawer.Screen name="MainTabsSV" component={BottomTabs} /> */}
-      <Drawer.Screen name="DangNhap">
-        {(props) => <DangNhap {...props} setUserRole={setUserRole} />}
-      </Drawer.Screen>
+      <Drawer.Screen name="DangNhap" component={DangNhap} />
     </Drawer.Navigator>
   );
 };
@@ -457,7 +455,7 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   drawerItemActive: {
-    backgroundColor: color.mainColor, // Màu xanh làm nổi bật
+    backgroundColor: color.mainColor,
   },
 });
 

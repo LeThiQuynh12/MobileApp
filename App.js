@@ -1,29 +1,12 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { NavigationContainer, useNavigation } from "@react-navigation/native";
-import {
-  createDrawerNavigator,
-  DrawerContentScrollView,
-  DrawerItem,
-} from "@react-navigation/drawer";
+import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import Icon from "react-native-vector-icons/FontAwesome";
-import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 
-// Import các màn hình
-import HomeScreen from "./src/screens/HomeScreen";
-import XemTienDo from "./src/screens/XemTienDo";
-import DuyetDeTai from "./src/screens/DuyetDeTai";
-import ThongTinCaNhan from "./src/screens/ThongTinCaNhan";
 import DangNhap from "./src/screens/DangNhap";
-// import ChiTietDeTai from "./src/screens/topic/ChiTietDeTai";
-import TrangChuGV from "./src/screens/(GV)/TrangChu";
-import ThongBao from "./src/screens/ThongBao";
 import color from "./src/utils/color";
-import { AntDesign, Fontisto } from "@expo/vector-icons";
-import HeaderLeft from "./src/components/HeaderLeft";
 import GiangVienNavigator from "./src/navigation/GiangVienNavigator";
 import SinhVienNavigator from "./src/navigation/SinhVienNavigator";
 import AdminNavigator from "./src/navigation/AdminNavigator";
@@ -31,7 +14,8 @@ import QuenMatKhau from "./src/screens/QuenMatKhau";
 import HeaderPlusIcon from "./src/components/HeaderRightPlus";
 import BackButton from "./src/components/BackButton";
 import XacMinhMatKhau from "./src/screens/XacMinhMatKhau";
-import { AuthProvider } from "./src/context/AuthContext";
+import { AuthContext, AuthProvider } from "./src/context/AuthContext";
+import { navigationRef } from "./src/utils/NavigationService";
 
 // Tạo các navigator
 const Drawer = createDrawerNavigator();
@@ -40,47 +24,15 @@ const Stack = createStackNavigator();
 
 // 🚀 App chính
 export default function App() {
-  const [userRole, setUserRole] = useState(null);
-  let screenComponent;
-
-  if (userRole === null) {
-    screenComponent = (
-      <Stack.Screen name="DangNhap">
-        {(props) => <DangNhap {...props} setUserRole={setUserRole} />}
-      </Stack.Screen>
-    );
-  } else if (userRole === "giangvien") {
-    screenComponent = (
-      <Stack.Screen name="GiangVien">
-        {(props) => <GiangVienNavigator {...props} setUserRole={setUserRole} />}
-      </Stack.Screen>
-    );
-  } else if (userRole === "sinhvien") {
-    screenComponent = (
-      <Stack.Screen name="SinhVien">
-        {(props) => <SinhVienNavigator {...props} setUserRole={setUserRole} />}
-      </Stack.Screen>
-    );
-  } else if (userRole === "admin") {
-    screenComponent = (
-      <Stack.Screen name="Admin">
-        {(props) => <AdminNavigator {...props} setUserRole={setUserRole} />}
-      </Stack.Screen>
-    );
-  } else {
-    screenComponent = (
-      <Stack.Screen name="DangNhap">
-        {(props) => <DangNhap {...props} setUserRole={setUserRole} />}
-      </Stack.Screen>
-    );
-  }
-
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <NavigationContainer>
+        <NavigationContainer ref={navigationRef}>
           <Stack.Navigator screenOptions={{ headerShown: false }}>
-            {screenComponent}
+            <Stack.Screen name="DangNhap" component={DangNhap} />
+            <Stack.Screen name="GiangVien" component={GiangVienNavigator} />
+            <Stack.Screen name="SinhVien" component={SinhVienNavigator} />
+            <Stack.Screen name="Admin" component={AdminNavigator} />
             <Stack.Screen
               name="QuenMatKhau"
               component={QuenMatKhau}
@@ -117,6 +69,55 @@ export default function App() {
             />
           </Stack.Navigator>
         </NavigationContainer>
+        {/* <NavigationContainer>
+          {user ? (
+            // 👉 Khi đã login, render theo loại user
+            <Stack.Navigator screenOptions={{ headerShown: false }}>
+              {user.role === "LECTURER" && (
+                <Stack.Screen name="GiangVien" component={GiangVienNavigator} />
+              )}
+              {user.role === "STUDENT" && (
+                <Stack.Screen name="SinhVien" component={SinhVienNavigator} />
+              )}
+              {user.role === "ADMIN" && (
+                <Stack.Screen name="Admin" component={AdminNavigator} />
+              )}
+            </Stack.Navigator>
+          ) : (
+            // 👉 Khi chưa login, render login + quên mật khẩu
+            <Stack.Navigator>
+              <Stack.Screen
+                name="DangNhap"
+                component={DangNhap}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="QuenMatKhau"
+                component={QuenMatKhau}
+                options={{
+                  headerShown: true,
+                  headerStyle: { height: 90 },
+                  headerTintColor: color.darkBlue,
+                  headerTitle: "Quên mật khẩu",
+                  headerTitleStyle: { fontSize: 18 },
+                  headerLeft: () => <BackButton buttonColor={color.darkBlue} />,
+                }}
+              />
+              <Stack.Screen
+                name="XacMinhMatKhau"
+                component={XacMinhMatKhau}
+                options={{
+                  headerShown: true,
+                  headerStyle: { height: 90 },
+                  headerTintColor: color.darkBlue,
+                  headerTitle: "Xác minh mật khẩu",
+                  headerTitleStyle: { fontSize: 18 },
+                  headerLeft: () => <BackButton buttonColor={color.darkBlue} />,
+                }}
+              />
+            </Stack.Navigator>
+          )}
+        </NavigationContainer> */}
       </AuthProvider>
     </SafeAreaProvider>
   );
