@@ -6,11 +6,7 @@ import { Alert } from "react-native";
 
 // export const API_URL = "http://10.0.2.2:8080/api";
 
-<<<<<<< HEAD
 export const API_URL = "http://192.168.50.53:8080/api";
-=======
-export const API_URL = "http://172.20.10.7:8080/api";
->>>>>>> 9a80d024f3c71d646180de68cb0ea43be366250a
 
 // Lưu token
 export const saveTokens = async ({

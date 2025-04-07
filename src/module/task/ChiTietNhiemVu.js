@@ -1,5 +1,5 @@
 // File ChiTietNhiemVu.js
-import { StyleSheet, Text, TouchableOpacity, View, Image } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View, Image, Alert } from "react-native";
 import React, { useState, useEffect } from "react";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { ScrollView, TextInput } from "react-native-gesture-handler";
@@ -7,6 +7,7 @@ import { useRoute } from "@react-navigation/native";
 import { Calendar } from "react-native-calendars";
 import color from "../../utils/color";
 import moment from "moment";
+import api from "../../utils/api";
 
 import {
   KeyboardAvoidingView,
@@ -14,7 +15,9 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
 } from "react-native";
+import * as DocumentPicker from 'expo-document-picker';
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+
 const ChiTietNhiemVu = ({ route }) => {
   const { task } = route.params; // Lấy dữ liệu được truyền qua
   console.log("Route Params:", route.params);
@@ -22,14 +25,18 @@ const ChiTietNhiemVu = ({ route }) => {
   const [selectedStatus, setSelectedStatus] = useState(
     task?.trangThai || "In progress"
   );
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [startDay, setStartDay] = useState(task?.ngayBatDau || "");
+  const [endDay, setEndDay] = useState(task?.ngayKetThuc || "");
+  const [error, setError] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const handleStatusChange = (status) => {
     setSelectedStatus(status);
   };
 
   console.log(task);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
 
   // Cập nhật state khi task thay đổi
   useEffect(() => {
@@ -38,6 +45,31 @@ const ChiTietNhiemVu = ({ route }) => {
       setDescription(task.moTa || "");
     }
   }, [task]);
+
+  const updateTask = async () => {
+    try {
+      const updatedTask = {
+        ten: title,
+        moTa: description,
+        trangThai: selectedStatus,
+        ngayBatDau: startDay,
+        ngayKetThuc: endDay,
+      };
+      console.log(task);
+
+      const response = await api.put(`/tasks/${task.id}`, updatedTask);
+
+      if (response.status === 200) {
+        console.log("Nhiệm vụ đã được cập nhật:", response.data);
+        Alert.alert("Thành công", "Nhiệm vụ đã được cập nhật!");
+      } else {
+        setError("Không thể cập nhật nhiệm vụ!");
+      }
+    } catch (error) {
+      console.error("Lỗi khi cập nhật:", error);
+      setError("Đã xảy ra lỗi, vui lòng thử lại!");
+    }
+  };
 
   // Format the date to dd/MM/yyyy
   const formatDate = (date) => moment(date).format("DD/MM/YYYY");
@@ -54,9 +86,6 @@ const ChiTietNhiemVu = ({ route }) => {
     setNewComment(""); // Xóa nội dung nhập sau khi gửi
   };
 
-  const [startDay, setStartDay] = useState(task?.ngayBatDau || "");
-  const [endDay, setEndDay] = useState(task?.ngayKetThuc || "");
-
   const handleSelectedStartDay = (day) => {
     setStartDay(day.dateString); // Cập nhật ngày bắt đầu
     setShowStartCal(false); // Đóng lịch sau khi chọn
@@ -70,8 +99,22 @@ const ChiTietNhiemVu = ({ route }) => {
   const [showStartCal, setShowStartCal] = useState(false);
   const [showEndCal, setShowEndCal] = useState(false);
 
-  const handlePress = () => {
-    console.log(task); // Log ra toàn bộ object task
+  const handleSelectFile = async () => {
+    try {
+      const res = await DocumentPicker.pickSingle({
+        type: [DocumentPicker.types.allFiles],
+      });
+
+      setSelectedFile(res); // Lưu file vào state
+
+    } catch (err) {
+      if (DocumentPicker.isCancel(err)) {
+        console.log("Người dùng đã hủy chọn file");
+      } else {
+        console.error("Lỗi khi chọn file:", err);
+        Alert.alert("Lỗi", "Không thể chọn tài liệu");
+      }
+    }
   };
 
   return (
@@ -175,6 +218,12 @@ const ChiTietNhiemVu = ({ route }) => {
                       <Text style={{ marginTop: 5 }}>Tải tài liệu</Text>
                     </TouchableOpacity>
                   </View>
+                  {selectedFile && (
+                    <Text style={{ marginTop: 10, fontStyle: 'italic' }}>
+                      Đã chọn: {selectedFile.name}
+                    </Text>
+                  )}
+
                   <Text style={{ marginTop: 10 }}>Trạng thái</Text>
 
                   {/* Trạng thái nhiệm vụ */}
@@ -203,7 +252,7 @@ const ChiTietNhiemVu = ({ route }) => {
                     ))}
 
                   </View>
-                  <TouchableOpacity style={styles.button} onPress={handlePress}>
+                  <TouchableOpacity style={styles.button} onPress={updateTask}>
                     <Text style={styles.buttonText}>Cập nhật</Text>
                   </TouchableOpacity>
                 </View>
