@@ -84,6 +84,11 @@ useEffect(() => {
   };
 
   const handleSaveEdit = async () => {
+    if (!editingDocument?.tenTaiLieu || !editingDocument?.loaiTaiLieu || !editingDocument?.duongDan) {
+      Alert.alert("Lỗi", "Vui lòng điền đầy đủ thông tin trước khi lưu.");
+      return;
+    }
+  
     try {
       await api.put(`/tailieu/${editingDocument.idTaiLieu}`, editingDocument);
   
@@ -95,6 +100,7 @@ useEffect(() => {
       console.error("Lỗi khi cập nhật tài liệu:", error);
     }
   };
+  
   
 
   // ❌ Xóa tài liệu
@@ -286,22 +292,22 @@ const handleAddDocument = async () => {
         value={editingDocument?.duongDan || ""}
         onChangeText={(text) => setEditingDocument({ ...editingDocument, duongDan: text })}
       />
-      <TextInput
+      {/* <TextInput
         style={styles.input}
         placeholder="ID Đề Tài"
           placeholderTextColor="#aaa"
         keyboardType="numeric"
         value={editingDocument?.idDeTai?.toString() || ""}
         onChangeText={(text) => setEditingDocument({ ...editingDocument, idDeTai: text })}
-      />
-      <TextInput
+      /> */}
+      {/* <TextInput
         style={styles.input}
         placeholder="ID Công Việc"
           placeholderTextColor="#aaa"
         keyboardType="numeric"
         value={editingDocument?.idCongViec?.toString() || ""}
         onChangeText={(text) => setEditingDocument({ ...editingDocument, idCongViec: text })}
-      />
+      /> */}
       <View style={styles.modalButtons}>
         <TouchableOpacity onPress={() => setEditModalVisible(false)} style={styles.cancelButton}>
           <Text>Hủy</Text>

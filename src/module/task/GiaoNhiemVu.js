@@ -1,139 +1,158 @@
 import React, { useState } from 'react';
 
 import {
+  ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Calendar } from 'react-native-calendars';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { TextInput } from 'react-native-gesture-handler';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { useNavigation } from '@react-navigation/native';
+import UploadFile from '../../module/document/UploadFile';
 
-const GiaoNhiemVu = () => {
-  const navigation = useNavigation();
-  const [openTopic, setOpenTopic] = useState(false);
-  const [selectedTopic, setSelectedTopic] = useState(null);
-  const [topics, setTopics] = useState([
-    { label: "Bảo mật hệ thống", value: "detai1" },
-    { label: "Học máy trong AI", value: "detai2" },
-    { label: "Bảo mật React Native", value: "detai3" },
-  ]);
+const GiaoNhiemVu = ({ route }) => {
+  const { idDeTai } = route.params;
 
+  const [taskName, setTaskName] = useState("");
+  const [description, setDescription] = useState("");
+  const [deadline, setDeadline] = useState(new Date());
+  const [showCalendar, setShowCalendar] = useState(false);
   const [openStudent, setOpenStudent] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [selectedStudents, setSelectedStudents] = useState([]);
   const [students, setStudents] = useState([
     { label: "Nguyễn Văn A", value: "sv1" },
     { label: "Trần Thị B", value: "sv2" },
     { label: "Lê Văn C", value: "sv3" },
     { label: "Hoàng Minh D", value: "sv4" },
   ]);
+  const [selectedFileName, setSelectedFileName] = useState(null);
 
-  // Quản lý Deadline
-  const [deadline, setDeadline] = useState(new Date());
-  const [showPicker, setShowPicker] = useState(false);
+  const handleFileSelect = (file) => {
+    setSelectedFileName(file.name);
+  };
 
-  const onChangeDate = (event, selectedDate) => {
-    if (selectedDate) {
-      setDeadline(selectedDate);
-    }
-    setShowPicker(false);
+  const onDayPress = (day) => {
+    setDeadline(new Date(day.dateString));
+    setShowCalendar(false);
   };
 
   return (
-    <View style={styles.container}>
-      {/*<View style={styles.header}>
-        <Ionicons
-          name="menu"
-          size={24}
-          color="white"
-          onPress={() => navigation.openDrawer()}
-        />
-        <Text style={styles.headerTitle}>Giao nhiệm vụ </Text>
-      </View>
-      */}
+    <ScrollView>
+          <View style={styles.container}>
       <View style={styles.formContainer}>
-        <View style={styles.row}>
-          <Text style={styles.label}>Chọn đề tài:</Text>
-          <View style={styles.dropdownWrapper}>
-            <DropDownPicker
-              open={openTopic}
-              value={selectedTopic}
-              items={topics}
-              setOpen={setOpenTopic}
-              setValue={setSelectedTopic}
-              setItems={setTopics}
-              placeholder="Chọn đề tài"
-              style={styles.dropdown}
-              dropDownContainerStyle={styles.dropdownContainer}
-            />
+        {/* Tên nhiệm vụ */}
+        <View style={styles.block}>
+          <View style={styles.labelRow}>
+            <Icon name="assignment" size={24} color="#333333" style={styles.icon} />
+            <Text style={styles.label}>Tên nhiệm vụ</Text>
           </View>
+          <TextInput
+            style={styles.input}
+            value={taskName}
+            onChangeText={setTaskName}
+            placeholder="Nhập tên nhiệm vụ"
+          />
         </View>
 
-        <View style={styles.row}>
-          <Text style={styles.label}>Tên nhiệm vụ:</Text>
-          <TextInput style={styles.input} />
-        </View>
-
-        <View style={styles.row}>
-          <Text style={styles.label}>Deadline:</Text>
+        {/* Deadline */}
+        <View style={styles.block}>
+          <View style={styles.labelRow}>
+            <Icon name="event" size={24} color="#333333" style={styles.icon} />
+            <Text style={styles.label}>Deadline</Text>
+          </View>
           <TouchableOpacity
             style={styles.input}
-            onPress={() => setShowPicker(true)}
+            onPress={() => setShowCalendar(!showCalendar)}
           >
             <Text>{deadline.toISOString().split("T")[0]}</Text>
           </TouchableOpacity>
-          {showPicker && (
-            <DateTimePicker
-              value={deadline}
-              mode="date"
-              display="default"
-              onChange={onChangeDate}
+          {showCalendar && (
+            <Calendar
+              onDayPress={onDayPress}
+              markedDates={{
+                [deadline.toISOString().split("T")[0]]: {
+                  selected: true,
+                  marked: true,
+                  selectedColor: '#007BFF',
+                },
+              }}
+              minDate={new Date().toISOString().split("T")[0]}
+              style={styles.calendar}
+              theme={{
+                selectedDayBackgroundColor: '#007BFF',
+                todayTextColor: '#007BFF',
+              }}
             />
           )}
         </View>
 
-        <View style={styles.row}>
-          <Text style={styles.label}>Sinh viên làm:</Text>
+        {/* Sinh viên */}
+        <View style={styles.block}>
+          <View style={styles.labelRow}>
+            <Icon name="group" size={24} color="#333333" style={styles.icon} />
+            <Text style={styles.label}>Sinh viên</Text>
+          </View>
           <View style={styles.dropdownWrapper}>
             <DropDownPicker
               open={openStudent}
-              value={selectedStudent}
+              value={selectedStudents}
               items={students}
               setOpen={setOpenStudent}
-              setValue={setSelectedStudent}
+              setValue={setSelectedStudents}
               setItems={setStudents}
+              multiple={true}
+              mode="BADGE"
+              badgeColors="#64B5F6"
+              badgeDotColors="#fff"
               placeholder="Chọn sinh viên"
               style={styles.dropdown}
               dropDownContainerStyle={styles.dropdownContainer}
+              badgeStyle={{ marginVertical: 5 }}
+              badgeTextStyle={{ color: "#fff" }}
             />
           </View>
         </View>
 
-        <View style={styles.row}>
-          <Text style={styles.label}>Mô tả:</Text>
+        {/* Mô tả */}
+        <View style={styles.block}>
+          <View style={styles.labelRow}>
+            <Icon name="description" size={24} color="#333333" style={styles.icon} />
+            <Text style={styles.label}>Mô tả</Text>
+          </View>
           <TextInput
-            style={[styles.input, styles.flexInput, styles.multiline]}
+            style={[styles.input, styles.multiline]}
+            value={description}
+            onChangeText={setDescription}
+            placeholder="Mô tả chi tiết..."
             multiline
           />
         </View>
 
-        <View style={styles.row}>
-          <Text style={styles.label}>Tài liệu:</Text>
-          <TouchableOpacity style={styles.uploadButton}>
-            <Icon name="upload" size={20} color="#fff" />
-            <Text style={styles.uploadButtonText}>Tải lên</Text>
-          </TouchableOpacity>
+        {/* Tài liệu */}
+        <View style={styles.block}>
+          <View style={styles.labelRow}>
+            <Icon name="cloud-upload" size={24} color="#333333" style={styles.icon} />
+            <Text style={styles.label}>Tài liệu</Text>
+          </View>
+          <UploadFile  />
         </View>
+
+        {selectedFileName && (
+          <Text style={{ marginLeft: 30, color: "#555" }}>
+            📎 Đã chọn: {selectedFileName}
+          </Text>
+        )}
       </View>
 
       <TouchableOpacity style={styles.submitButton}>
-        <Text style={styles.submitButtonText}>Giao</Text>
+        <Text style={styles.submitButtonText}>Giao nhiệm vụ</Text>
       </TouchableOpacity>
     </View>
+    </ScrollView>
   );
 };
 
@@ -142,100 +161,84 @@ export default GiaoNhiemVu;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F2F2F2",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#64B5F6",
-    padding: 25,
-    paddingTop: 60,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "white",
-    marginLeft: 15,
+    backgroundColor: "#F1F1F1",
+    padding: 15,
   },
   formContainer: {
-    backgroundColor: "#fff",
-    padding: 15,
-    borderRadius: 8,
-    marginTop: 10,
-    gap: 24,
+    backgroundColor: "#FFFFFF",
+    padding: 20,
+    borderRadius: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
-  flexInput: {
-    flex: 1, // Giúp input mở rộng hết dòng
+  block: {
+    marginBottom: 20,
   },
-  multiline: {
-    height: 80,
-    textAlignVertical: "top", // Căn chữ lên đầu
-  },
-  row: {
+  labelRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 10,
+    marginBottom: 8,
+    gap: 10, // Added gap for spacing between icon and text
+  },
+  icon: {
+    width: 30, // Increased width for more spacing
+    textAlign: "center",
+    color: "#333333"
   },
   label: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#333",
-    width: 100,
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#000",
   },
   input: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    padding: 10,
-    backgroundColor: "#fff",
+    borderWidth: 2,
+    borderColor: "#CCCCCC",
+    borderRadius: 20,
+    padding: 12,
+    backgroundColor: "#FFFFFF",
+    fontSize: 16,
   },
   multiline: {
-    height: 80,
+    height: 100,
     textAlignVertical: "top",
   },
-  uploadButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#7AD530",
-    padding: 12,
-    borderRadius: 5,
-    marginLeft: 10,
-    justifyContent: "center",
-    width: 150,
+  dropdownWrapper: {
+    zIndex: 10,
+    
   },
-  uploadButtonText: {
-    color: "#fff",
-    marginLeft: 5,
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
+  dropdown: {
+    borderWidth: 2,
+    borderColor: "#CCCCCC",
+    borderRadius: 20,
+    paddingVertical:20,
+    backgroundColor: "#FFFFFF",
+  },
+  dropdownContainer: {
+    borderWidth: 1,
+    
+    borderColor: "#CCCCCC",
+  },
+  calendar: {
+    marginTop: 10,
+    borderRadius: 8,
+    elevation: 3,
+    backgroundColor: "#FFFFFF",
   },
   submitButton: {
-    marginTop: 35,
+    marginTop: 30,
     backgroundColor: "#64B5F6",
-    padding: 12,
+    padding: 15,
     borderRadius: 8,
     alignItems: "center",
     alignSelf: "center",
     width: 200,
   },
   submitButtonText: {
-    color: "#fff",
+    color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: "bold",
-  },
-  dropdownWrapper: {
-    flex: 1,
-  },
-  dropdown: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    backgroundColor: "#fff",
-  },
-  dropdownContainer: {
-    borderWidth: 1,
-    borderColor: "#ccc",
+    fontWeight: "600",
   },
 });

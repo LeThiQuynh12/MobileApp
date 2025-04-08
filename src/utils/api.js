@@ -1,12 +1,14 @@
-import axios from "axios";
+import axios from 'axios';
+import { Alert } from 'react-native';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 // import { useNavigation } from "@react-navigation/native";
-import { navigate } from "./NavigationService";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Alert } from "react-native";
+import { navigate } from './NavigationService';
 
 // export const API_URL = "http://10.0.2.2:8080/api";
 
-export const API_URL = "http://172.20.10.3:8080/api";
+export const API_URL = "http://192.168.1.7:8080/api";
 
 // Lưu token
 export const saveTokens = async ({

@@ -39,9 +39,9 @@ const SupervisionTopics = () => {
   
         if (foundStudent) {
           // Lấy danh sách đề tài của sinh viên
-          const topicsResponse = await api.get(`/topics?studentId=${foundStudent.id}`);
+          const topicsResponse = await api.get(`/topics/student/${foundStudent.id}`);
           const filteredTopics = topicsResponse.data.results.filter(
-            topic => String(topic.idSinhVien) === String(foundStudent.id)
+            topic => topic.group.members.some(member => member.id === foundStudent.id)
           );
           setTopics(filteredTopics);
   

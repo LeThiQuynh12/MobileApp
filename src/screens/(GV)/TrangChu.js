@@ -4,6 +4,7 @@ import React, {
 } from 'react';
 
 import {
+  ActivityIndicator,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -22,70 +23,87 @@ const daysOfWeek = [
 const today = new Date();
 
 const SupervisionTopics = () => {
-  const [expandedTopic1, setExpandedTopic1] = useState(false);
-  const [expandedTopic2, setExpandedTopic2] = useState(false);
-  const [user, setUser] = useState(null);  // Thông tin người dùng
-  const [lecturer, setLecturer] = useState(null);  // Thông tin giảng viên
-  const [topics, setTopics] = useState([]);  // Danh sách đề tài của giảng viên
-  const [students, setStudents] = useState({});
+  const [user, setUser] = useState(null);
+  const [lecturer, setLecturer] = useState(null);
+  const [topics, setTopics] = useState([]);
+  const [totalTopics, setTotalTopics] = useState(0); // Thêm state cho tổng số đề tài
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Lấy thông tin tài khoản
         const userResponse = await api.get("/auth/account");
         const userData = userResponse.data.results;
         setUser(userData);
-  
+        console.log("User:", userData);
+
+        // Lấy danh sách giảng viên
         const lecturerResponse = await api.get("/lecturers");
         const foundLecturer = lecturerResponse.data.results.find(
           (lect) => lect.userId === userData.id
         );
-  
-        if (foundLecturer) {
-          setLecturer(foundLecturer);
-  
-          const topicsResponse = await api.get(`/topics?lecturerId=${foundLecturer.id}`);
-          const topicsData = topicsResponse.data.results;
-          setTopics(topicsData);
-  
-          // Lấy danh sách tất cả idSinhVien từ các topics
-          const studentIds = topicsData.map((topic) => topic.idSinhVien);
-          
-          // Gọi API lấy thông tin sinh viên
-          if (studentIds.length > 0) {
-            const studentsResponse = await api.get(`/students`);
-            const studentsData = studentsResponse.data.results;
-  
-            // Map sinh viên theo idSinhVien
-            const studentsMap = studentsData.reduce((acc, student) => {
-              acc[student.id] = student;
-              return acc;
-            }, {});
-  
-            setStudents(studentsMap);
-          }
+
+        if (!foundLecturer) {
+          console.warn("Không tìm thấy giảng viên!");
+          setLoading(false);
+          return;
         }
+
+        setLecturer(foundLecturer);
+        console.log("Giảng viên:", foundLecturer);
+
+        // 🟢 Lấy danh sách đề tài của giảng viên (Dùng API đúng)
+        const topicsResponse = await api.get(`/topics/lecturer/${foundLecturer.id}`);
+        console.log("Dữ liệu từ API topics:", topicsResponse.data);
+
+        let topicsData = [];
+
+        const rawData = topicsResponse.data;
+
+        // Truy cập vào mảng kết quả
+        if (rawData && rawData.results && Array.isArray(rawData.results)) {
+          topicsData = rawData.results;
+        } else {
+          console.warn("Dữ liệu không hợp lệ:", rawData);
+        }
+
+        setTopics(topicsData);
+        console.log("✅ Danh sách đề tài sau khi xử lý:", topicsData);
+
+        // 🟢 Lấy tổng số đề tài
+        const totalTopicsResponse = await api.get(`/topics`);
+        const totalTopicsData = totalTopicsResponse.data.results.length;
+        setTotalTopics(totalTopicsData);
+        console.log("✅ Tổng số đề tài:", totalTopicsData);
+
       } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu:", error.response?.data || error.message);
+        console.error("❌ Lỗi khi lấy dữ liệu:", error.response?.data || error.message);
+      } finally {
+        setLoading(false);
       }
     };
-  
+
     fetchData();
   }, []);
-  
 
 
-  // Lọc các đề tài của giảng viên
-  const lecturerTopics = topics.filter((topic) => topic.idGiangVien === lecturer?.id);
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#007AFF" />
+        <Text>Đang tải dữ liệu...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <Text style={styles.greeting}>
-  <FontAwesome name="hand-paper-o" size={18} color="#007AFF" />  
-  {" "}Xin chào, <Text style={{ fontWeight: "bold" }}>{user?.fullName}</Text>
-</Text>
-
+        <FontAwesome name="hand-paper-o" size={18} color="#007AFF" />{" "}
+        Xin chào, <Text style={{ fontWeight: "bold" }}>{user?.fullName}</Text>
+      </Text>
       <Text>Mã giảng viên: {lecturer?.id}</Text>
 
       {/* Ngày tháng */}
@@ -93,59 +111,48 @@ const SupervisionTopics = () => {
         <FontAwesome name="calendar" size={24} color="#007AFF" />
         <View>
           <Text style={styles.dateText}>
-            {`${daysOfWeek[today.getDay()]}, ${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear()}`}
+            {new Date().toLocaleDateString("vi-VN", {
+              weekday: "long",
+              day: "numeric",
+              month: "numeric",
+              year: "numeric",
+            })}
           </Text>
-          <Text style={styles.normalText}>Có {lecturerTopics.length} đề tài cập nhật mới</Text>
+          <Text style={styles.normalText}>
+            Có <Text style={{ fontWeight: "bold" }}>{topics.length}</Text> đề tài cập nhật mới
+          </Text>
         </View>
       </View>
 
-
-      {/* Card chứa các đề tài đang hướng dẫn */}
-      {/* <View style={styles.card}>
+      {/* Card chứa các đề tài */}
+      <View style={styles.card}>
         <Text style={styles.cardTitle}>Đề tài đang hướng dẫn:</Text>
 
-        {lecturerTopics.map((topic, index) => ( // Thêm index vào đây
-  <TouchableOpacity key={topic.id} style={styles.topicItem}>
-    <View style={styles.circleNumber}>
-      <Text style={styles.numberText}>{index + 1}</Text> 
-    </View>
-    <View style={styles.topicInfo}>
-      <Text style={styles.topicTitle}>{topic.tenDeTai}</Text>
-    </View>
-  </TouchableOpacity>
-))}
+        <View style={styles.totalTopicsContainer}>
+          <Text style={styles.totalTopicsText}>
+            Tổng số đề tài: <Text style={{ fontWeight: "bold" }}>{topics.length}/{totalTopics}</Text>
+          </Text>
+        </View>
 
-      </View> */}
-
-<View style={styles.card}>
-  <Text style={styles.cardTitle}>Đề tài đang hướng dẫn:</Text>
-
-  {/* Hiển thị tổng số đề tài */}
-<View style={styles.totalTopicsContainer}>
-  <Text style={styles.totalTopicsText}>
-    Tổng số đề tài: <Text style={{ fontWeight: "bold" }}>{lecturerTopics.length}</Text> / {topics.length}
-  </Text>
-</View>
-
-
-  {lecturerTopics.map((topic, index) => (
-    <TouchableOpacity key={topic.id} style={styles.topicItem}>
-      <View style={styles.circleNumber}>
-        <Text style={styles.numberText}>{index + 1}</Text> 
+        {topics.length > 0 ? (
+          topics.map((topic, index) => (
+            <TouchableOpacity key={topic.id} style={styles.topicItem}>
+              <View style={styles.circleNumber}>
+                <Text style={styles.numberText}>{index + 1}</Text>
+              </View>
+              <View style={styles.topicInfo}>
+                <Text style={styles.topicTitle}>{topic.tenDeTai}</Text>
+              </View>
+            </TouchableOpacity>
+          ))
+        ) : (
+          <Text style={styles.noDataText}>Không có đề tài nào.</Text>
+        )}
       </View>
-      <View style={styles.topicInfo}>
-        <Text style={styles.topicTitle}>{topic.tenDeTai}</Text>
-      </View>
-    </TouchableOpacity>
-  ))}
-</View>
-
-
-
-
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

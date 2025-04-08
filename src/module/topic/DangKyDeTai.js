@@ -1,4 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, {
+  useEffect,
+  useState,
+} from 'react';
+
+import * as DocumentPicker from 'expo-document-picker';
 import {
   ActivityIndicator,
   Alert,
@@ -8,12 +13,18 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from "react-native";
-import { Calendar } from "react-native-calendars";
-import { MaterialIcons, FontAwesome, Ionicons } from "@expo/vector-icons";
-import * as DocumentPicker from "expo-document-picker";
-import { useNavigation } from "@react-navigation/native";
-import api from "../../utils/api";
+} from 'react-native';
+import { Calendar } from 'react-native-calendars';
+
+import {
+  FontAwesome,
+  Ionicons,
+  MaterialIcons,
+} from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+
+import api from '../../utils/api';
+import UploadFile from '../document/UploadFile';
 
 const DangKyDeTai = () => {
   const navigation = useNavigation();
@@ -125,6 +136,8 @@ const DangKyDeTai = () => {
       throw error;
     }
   };
+
+  
 
   // Hàm lấy danh sách đề tài
   const fetchTopics = async () => {
@@ -538,49 +551,10 @@ const DangKyDeTai = () => {
           </View>
         ))}
 
-        {/* Tài liệu đính kèm */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Tài liệu đính kèm</Text>
+      <Text style={styles.label}>Tài liệu đính kèm (nếu có)</Text>
 
-          {!topicData.taiLieu ? (
-            <TouchableOpacity
-              style={styles.uploadButton}
-              onPress={pickDocument}
-            >
-              <View style={styles.uploadButtonContent}>
-                <Ionicons name="cloud-upload" size={24} color="#3498db" />
-                <Text style={styles.uploadButtonText}>Tải lên tài liệu</Text>
-              </View>
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.documentContainer}>
-              <View style={styles.documentInfo}>
-                {getFileIcon()}
-                <View style={styles.documentTextContainer}>
-                  <Text
-                    style={styles.documentName}
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                  >
-                    {topicData.taiLieu.name}
-                  </Text>
-                  <Text style={styles.documentSize}>
-                    {(topicData.taiLieu.size / 1024).toFixed(2)} KB
-                  </Text>
-                </View>
-              </View>
+      <UploadFile/>
 
-              <TouchableOpacity
-                style={styles.removeDocumentButton}
-                onPress={() =>
-                  setTopicData((prev) => ({ ...prev, taiLieu: null }))
-                }
-              >
-                <Ionicons name="close-circle" size={24} color="#e74c3c" />
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
       </View>
 
       {/* Submit button */}
@@ -726,59 +700,7 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     elevation: 4,
   },
-  uploadButton: {
-    borderWidth: 1,
-    borderColor: "#3498db",
-    borderRadius: 10,
-    borderStyle: "dashed",
-    padding: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#f8f9fa",
-  },
-  uploadButtonContent: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  uploadButtonText: {
-    marginTop: 10,
-    color: "#3498db",
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  documentContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 10,
-    padding: 15,
-    backgroundColor: "#fff",
-  },
-  documentInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-    marginRight: 10,
-  },
-  documentTextContainer: {
-    flex: 1,
-    marginLeft: 10,
-  },
-  documentName: {
-    fontSize: 15,
-    color: "#2c3e50",
-    fontWeight: "500",
-  },
-  documentSize: {
-    fontSize: 13,
-    color: "#7f8c8d",
-    marginTop: 4,
-  },
-  removeDocumentButton: {
-    padding: 5,
-  },
+
   submitButton: {
     flexDirection: "row",
     justifyContent: "center",
