@@ -37,6 +37,40 @@ const DangKyDeTai = () => {
     taiLieu: null,
   });
 
+  const postNotification = async () => {
+    try {
+      const responseLecturer = await api.get(`/users/lecturer/${topicData.maGiangVien}`);
+      const lecturerId = responseLecturer.data.results.id;
+
+      const studentIDs = await Promise.all(
+        topicData.thanhVien.map(async (member) => {
+          const res = await api.get(`/users/student/${member.maSinhVien}`);
+          const id = res.data.results.id;
+          return id;
+        })
+      );
+
+      const responseLeader = await api.get(`/users/student/${topicData.maSinhVien}`);
+      const leaderId = responseLeader.data.results.id;
+
+      const userIDs = [lecturerId, ...studentIDs, leaderId];
+
+      const notification = {
+        tieuDe: "Bạn đã đăng kí đề tài thành công",
+        moTa: `Đề tài của bạn: ${topicData.tenDeTai}. Giảng viên hướng dẫn: ${topicData.tenGiangVien} Trưởng nhóm: ${topicData.tenSinhVien}, các thành viên tham gia: ${topicData.thanhVien.map(member => member.tenSinhVien).join(", ")}`,
+        userIds: userIDs
+      };
+
+      const responsePost = await api.post("/notifications", notification);
+      if (responsePost.status === 201 || responsePost.status === 200) {
+        alert("Đã gửi thông báo thành công");
+      }
+    } catch (error) {
+      console.error("❌ Lỗi gửi thông báo:", error.response?.data || error.message);
+      alert("Không thể gửi thông báo");
+    }
+  };
+
   // Hàm gửi dữ liệu đề tài
   const postTopic = async (data) => {
     try {
@@ -209,6 +243,7 @@ const DangKyDeTai = () => {
     try {
       const response = await postTopic(topicData);
       if (response) {
+        postNotification();
         Alert.alert("Thành công", "Đăng ký đề tài thành công");
         navigation.goBack();
       }
