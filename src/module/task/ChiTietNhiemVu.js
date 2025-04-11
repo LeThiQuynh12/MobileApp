@@ -47,6 +47,10 @@ const ChiTietNhiemVu = ({ route }) => {
   }, [task]);
 
   const updateTask = async () => {
+    if (!title.trim() || !description.trim()) {
+      Alert.alert("Lỗi", "Tên công việc và mô tả không được để trống!");
+      return;
+    }
     try {
       const updatedTask = {
         tenCongViec: title,
