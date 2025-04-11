@@ -20,7 +20,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 
 const ChiTietNhiemVu = ({ route }) => {
   const { task } = route.params; // Lấy dữ liệu được truyền qua
-  console.log("Route Params:", route.params);
+  //console.log("Route Params:", route.params);
 
   const [selectedStatus, setSelectedStatus] = useState(
     task?.trangThai || "In progress"
@@ -36,7 +36,7 @@ const ChiTietNhiemVu = ({ route }) => {
     setSelectedStatus(status);
   };
 
-  console.log(task);
+  //console.log(task);
 
   // Cập nhật state khi task thay đổi
   useEffect(() => {
@@ -49,13 +49,13 @@ const ChiTietNhiemVu = ({ route }) => {
   const updateTask = async () => {
     try {
       const updatedTask = {
-        ten: title,
+        tenCongViec: title,
         moTa: description,
-        trangThai: selectedStatus,
         ngayBatDau: startDay,
         ngayKetThuc: endDay,
+        trangThai: selectedStatus,
       };
-      console.log(task);
+      console.log(task.id, updatedTask);
 
       const response = await api.put(`/tasks/${task.id}`, updatedTask);
 
