@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import {
   FlatList,
@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-
+import api from '../../utils/api';
 import { useNavigation } from '@react-navigation/native';
 
 const taskStatusColors = {
@@ -49,54 +49,92 @@ const allTasks = [
 ];
 
 const TaskCard = ({ task }) => {
-    const navigation = useNavigation();
-  
-    const handleDelete = () => {
-      Alert.alert("Xác nhận xóa", "Bạn có chắc chắn muốn xóa công việc này?", [
-        { text: "Hủy", style: "cancel" },
-        {
-          text: "Xóa",
-          onPress: () => console.log("Công việc đã bị xóa"), // Thêm logic xóa công việc tại đây
-          style: "destructive",
-        },
-      ]);
-    };
-  
-    return (
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Icon name="thumb-tack" size={20} color="#64B5F6" style={styles.cardIcon} />
-          <Text style={styles.cardTitle}>{task.name}</Text>
-        </View>
-        <Text style={styles.cardInfo}><Text style={styles.label}>Mô tả:</Text> {task.description}</Text>
-        <Text style={styles.cardInfo}><Text style={styles.label}>Thời gian:</Text> {task.startDate} → {task.endDate}</Text>
-        <Text style={styles.cardInfo}><Text style={styles.label}>Người tạo:</Text> {task.creator}</Text>
-        <Text style={styles.cardInfo}><Text style={styles.label}>Người thực hiện:</Text> {task.assignee || "Chưa có"}</Text>
-  
-        {/* Hiển thị trạng thái với màu sắc khác nhau */}
-        <View style={[styles.statusContainer, { backgroundColor: taskStatusColors[task.status] }]}>
-          <Text style={styles.statusText}>{task.status}</Text>
-        </View>
-  
-        {/* Nhóm nút Sửa và Xóa vào một hàng ngang */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.updateButton}
-            onPress={() => navigation.navigate("SuaCongViec", { task })}
-          >
-            <Text style={styles.buttonText}>Sửa</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-            <Text style={styles.buttonText}>Xóa</Text>
-          </TouchableOpacity>
-        </View>
+  const navigation = useNavigation();
+
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        <Icon name="thumb-tack" size={20} color="#64B5F6" style={styles.cardIcon} />
+        <Text style={styles.cardTitle}>{task.topic.tenDeTai}</Text>
       </View>
-    );
-  };
-  
-  
+      <Text style={styles.cardInfo}><Text style={styles.label}>Tên nhiệm vụ:</Text> {task.moTa}</Text>
+      <Text style={styles.cardInfo}><Text style={styles.label}>Mô tả:</Text> {task.moTa}</Text>
+      <Text style={styles.cardInfo}><Text style={styles.label}>Thời gian:</Text> {task.ngayBatDau} → {task.ngayKetThuc}</Text>
+      <Text style={styles.label}>Người thực hiện: {" "}
+        {task.students && task.students.length > 0
+          ? task.students.map(a => a.user.fullName).join(", ")
+          : "Chưa có"}
+      </Text>
+      {/* Hiển thị trạng thái với màu sắc khác nhau */}
+      <View style={[styles.statusContainer, {
+        backgroundColor: taskStatusColors[
+          task.trangThai === "To do"
+            ? "Chưa bắt đầu"
+            : (task.trangThai === "In progress"
+              ? "Đang thực hiện"
+              : "Hoàn thành")]
+      }]}>
+        <Text style={styles.statusText}>{task.trangThai === "To do"
+          ? "Chưa bắt đầu"
+          : (task.trangThai === "In progress"
+            ? "Đang thực hiện"
+            : "Hoàn thành")}</Text>
+      </View>
+    </View>
+  );
+};
 
 const QuanLyCongViec = () => {
+  const [loading, setLoading] = useState(false);
+  const [loadMore, setLoadMore] = useState(false);
+  const [error, setError] = useState(null);
+  const [searchText, setSearchText] = useState("");
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [tasks, setTasks] = useState([]);
+
+  const fetchTasks = async (page, isLoadMore = false) => {
+    try {
+      if (isLoadMore)
+        setLoadMore(true);
+      else {
+        setLoadMore(false);
+        setPage(0);
+      }
+
+      setError(null);
+      const response = await api.get(`/tasks/split?page=${page}&size=4`);
+      const data = response.data.results.content || [];
+      const totalPages = response.data.results.totalPages || 0;
+
+      if (isLoadMore) {
+        setTasks((prev) => [...prev, ...data]);
+        setPage((prevPage) => prevPage + 1);
+      } else {
+        setTasks(data);
+        setPage(1);
+      }
+
+      setHasMore(page < totalPages - 1);
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+      setError("Không thể tải thông báo, vui lòng thử lại!");
+    } finally {
+      setLoading(false);
+      setLoadMore(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchTasks(0);
+  }, []);
+
+  const loadingMore = () => {
+    if (!loadMore && hasMore) {
+      fetchTasks(page, true);
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* Thanh tìm kiếm */}
@@ -106,12 +144,13 @@ const QuanLyCongViec = () => {
           style={styles.searchInput}
           placeholder="Tìm kiếm công việc..."
           placeholderTextColor="#999"
+          onChangeText={(text) => setSearchText(text)}
         />
       </View>
 
       {/* Danh sách công việc */}
       <FlatList
-        data={allTasks}
+        data={tasks}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => <TaskCard task={item} />}
         contentContainerStyle={{ paddingBottom: 20 }}
@@ -125,11 +164,11 @@ export default QuanLyCongViec;
 
 
 const styles = StyleSheet.create({
-    label: {
-        fontWeight: "bold",
-        color: "#333",
-      },
-      
+  label: {
+    fontWeight: "bold",
+    color: "#333",
+  },
+
   container: {
     flex: 1,
     backgroundColor: "#F2F2F2",
@@ -213,5 +252,5 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
   },
-  
+
 });

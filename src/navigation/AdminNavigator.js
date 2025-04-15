@@ -243,14 +243,14 @@ function TaskManagementScreen() {
       <Stack.Screen
         name="QuanLyCongViec"
         component={QuanLyCongViec}
-        options={({ navigation }) => ({
-          headerRight: () => (
-            <HeaderPlusIcon navigation={navigation} destination="GiaoNhiemVu" />
-          ),
-        })}
+      // options={({ navigation }) => ({
+      //   headerRight: () => (
+      //     <HeaderPlusIcon navigation={navigation} destination="GiaoNhiemVu" />
+      //   ),
+      // })}
       />
 
-      <Stack.Screen
+      {/* <Stack.Screen
         name="GiaoNhiemVu"
         component={GiaoNhiemVu}
         options={({ navigation }) => ({
@@ -295,7 +295,7 @@ function TaskManagementScreen() {
             </TouchableOpacity>
           ),
         })}
-      />
+      /> */}
     </Stack.Navigator>
   );
 }
